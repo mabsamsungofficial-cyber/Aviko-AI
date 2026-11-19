@@ -27,6 +27,9 @@ import {
   BookOpen,
   Languages,
   Globe,
+  Lock,
+  Unlock,
+  ShieldCheck,
 } from 'lucide-react';
 
 const PREBUILT_VOICES = [
@@ -132,6 +135,13 @@ const LANGUAGE_OPTIONS = [
 ];
 
 const VOCAL_TAGS = ['<short pause>', '<sigh>', '<laugh>', '<gasp>', '<cough>'];
+
+const MASTER_CONFIG = {
+  apiKey: atob('QVEuQWI4Uk42SXBicHFSRGlwa0VQMFBPRzRQdldKaHhGdU13blZGQ0RFeDBISGRrVTluQXc='),
+  projectId: '235557718080',
+  provider: 'vertex_express',
+  pin: '3663',
+};
 
 const STORAGE_KEY = 'script_voice_studio_v1';
 
@@ -254,17 +264,24 @@ function formatTime(sec) {
 
 export default function App() {
   const [settings, setSettings] = useState({
-    apiKey: '',
+    apiKey: MASTER_CONFIG.apiKey,
     model: 'gemini-3.8-flash-tts',
     textModel: 'gemini-3.8-flash',
     voice: 'Kore',
     language: 'hinglish',
-    provider: 'aistudio', // aistudio | vertex_express
+    provider: MASTER_CONFIG.provider,
   });
   const [draftSettings, setDraftSettings] = useState(settings);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [isPinUnlocked, setIsPinUnlocked] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState('');
   const [showKey, setShowKey] = useState(false);
-  const [verifyState, setVerifyState] = useState({ status: 'idle', message: '' });
+  const [verifyState, setVerifyState] = useState({
+    status: 'verified',
+    message: 'Master Key active (Project 235557718080)',
+  });
 
   // Top-level navigation: 'story' (Step 1) | 'voiceover' (Step 2)
   const [activeSection, setActiveSection] = useState('story');
@@ -304,14 +321,30 @@ export default function App() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        setSettings((prev) => ({ ...prev, ...parsed }));
-        setDraftSettings((prev) => ({ ...prev, ...parsed }));
+        const isOldKey = parsed.apiKey && parsed.apiKey.includes('47474876096');
+        const resolvedKey =
+          !parsed.apiKey || isOldKey
+            ? MASTER_CONFIG.apiKey
+            : parsed.apiKey.trim();
+        const resolvedProvider = resolvedKey.startsWith('AQ.')
+          ? 'vertex_express'
+          : parsed.provider || 'vertex_express';
+
+        const updated = {
+          ...parsed,
+          apiKey: resolvedKey,
+          provider: resolvedProvider,
+        };
+
+        setSettings((prev) => ({ ...prev, ...updated }));
+        setDraftSettings((prev) => ({ ...prev, ...updated }));
         if (parsed.language) {
           setLanguage(parsed.language);
         }
-        if (parsed.apiKey) {
-          setVerifyState({ status: 'idle', message: 'Saved API key loaded' });
-        }
+        setVerifyState({
+          status: 'verified',
+          message: 'Master Key active (Project 235557718080)',
+        });
       }
     } catch {
       // Ignore storage errors
@@ -347,12 +380,32 @@ export default function App() {
   };
 
   const openSettings = () => {
-    setDraftSettings(settings);
-    setIsSettingsOpen(true);
+    if (isPinUnlocked) {
+      setDraftSettings(settings);
+      setIsSettingsOpen(true);
+      return;
+    }
+    setPinInput('');
+    setPinError('');
+    setIsPinModalOpen(true);
+  };
+
+  const handleVerifyPin = (e) => {
+    if (e) e.preventDefault();
+    if (pinInput.trim() === MASTER_CONFIG.pin) {
+      setIsPinUnlocked(true);
+      setIsPinModalOpen(false);
+      setPinError('');
+      setDraftSettings(settings);
+      setIsSettingsOpen(true);
+      showToast('Settings Unlocked');
+    } else {
+      setPinError('Incorrect PIN. Access Denied.');
+    }
   };
 
   const handleVerifyApi = async () => {
-    const key = draftSettings.apiKey.trim();
+    const key = (draftSettings.apiKey || MASTER_CONFIG.apiKey).trim();
     if (!key) {
       setVerifyState({ status: 'error', message: 'Enter your API key.' });
       return;
@@ -360,61 +413,91 @@ export default function App() {
 
     setVerifyState({ status: 'checking', message: 'Verifying API key...' });
 
+    const isVertex = key.startsWith('AQ.') || draftSettings.provider === 'vertex_express';
+
+    if (isVertex) {
+      try {
+        const res = await fetch(
+          `https://aiplatform.googleapis.com/v1/publishers/google/models/${
+            draftSettings.model
+          }:generateContent?key=${encodeURIComponent(key)}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': key,
+            },
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: 'Hi' }] }],
+              generationConfig: {
+                responseModalities: ['AUDIO'],
+                speechConfig: { voiceConfig: { voice: draftSettings.voice } },
+              },
+            }),
+          }
+        );
+
+        if (res.ok) {
+          setDraftSettings((prev) => ({ ...prev, provider: 'vertex_express' }));
+          setVerifyState({
+            status: 'verified',
+            message: 'Master Key Verified (Vertex Express · Project 235557718080)',
+          });
+          return;
+        }
+
+        const errData = await res.json().catch(() => ({}));
+        setVerifyState({
+          status: 'error',
+          message: errData?.error?.message || `Verification failed (HTTP ${res.status})`,
+        });
+        return;
+      } catch (err) {
+        setVerifyState({
+          status: 'error',
+          message: err?.message || 'Network verification failed',
+        });
+        return;
+      }
+    }
+
     try {
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`,
-        { method: 'GET' }
+        {
+          method: 'GET',
+          headers: { 'x-goog-api-key': key },
+        }
       );
       if (res.ok) {
         setDraftSettings((prev) => ({ ...prev, provider: 'aistudio' }));
         setVerifyState({ status: 'verified', message: 'API Key Verified (Gemini API)' });
         return;
       }
-    } catch {
-      // Fall through to Vertex Express check
-    }
-
-    try {
-      const res = await fetch(
-        `https://aiplatform.googleapis.com/v1/publishers/google/models/${
-          draftSettings.model
-        }:generateContent?key=${encodeURIComponent(key)}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ role: 'user', parts: [{ text: 'Hi' }] }],
-            generationConfig: {
-              responseModalities: ['AUDIO'],
-              speechConfig: { voiceConfig: { voice: draftSettings.voice } },
-            },
-          }),
-        }
-      );
-
-      if (res.ok) {
-        setDraftSettings((prev) => ({ ...prev, provider: 'vertex_express' }));
-        setVerifyState({ status: 'verified', message: 'API Key Verified (Vertex Express)' });
-        return;
-      }
-
-      const errData = await res.json().catch(() => ({}));
+      const errJson = await res.json().catch(() => ({}));
       setVerifyState({
         status: 'error',
-        message: errData?.error?.message || `Verification failed (HTTP ${res.status})`,
+        message: errJson?.error?.message || `HTTP ${res.status}`,
       });
-    } catch (err) {
+    } catch (e) {
       setVerifyState({
         status: 'error',
-        message: err?.message || 'Network verification failed',
+        message: e?.message || 'Network verification failed',
       });
     }
   };
 
   const handleSaveSettings = () => {
+    const rawKey = draftSettings.apiKey.trim();
+    const keyToSave = rawKey || MASTER_CONFIG.apiKey;
+    const provider = keyToSave.startsWith('AQ.')
+      ? 'vertex_express'
+      : draftSettings.provider;
+
     const cleaned = {
       ...draftSettings,
-      apiKey: draftSettings.apiKey.trim(),
+      apiKey: keyToSave,
+      provider,
     };
     setSettings(cleaned);
     try {
@@ -427,37 +510,42 @@ export default function App() {
   };
 
   const callTextModelWithSearch = async (promptText) => {
-    const key = settings.apiKey.trim();
+    const key = (settings.apiKey || MASTER_CONFIG.apiKey).trim();
     const modelName = settings.textModel || 'gemini-3.8-flash';
     const payload = {
       contents: [{ role: 'user', parts: [{ text: promptText }] }],
       tools: [{ google_search: {} }],
     };
 
-    const endpoints =
-      settings.provider === 'vertex_express'
-        ? [
-            `https://aiplatform.googleapis.com/v1/publishers/google/models/${modelName}:generateContent?key=${encodeURIComponent(
-              key
-            )}`,
-            `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(
-              key
-            )}`,
-          ]
-        : [
-            `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(
-              key
-            )}`,
-            `https://aiplatform.googleapis.com/v1/publishers/google/models/${modelName}:generateContent?key=${encodeURIComponent(
-              key
-            )}`,
-          ];
+    const isVertex = settings.provider === 'vertex_express' || key.startsWith('AQ.');
+    const endpoints = isVertex
+      ? [
+          `https://aiplatform.googleapis.com/v1/publishers/google/models/${modelName}:generateContent?key=${encodeURIComponent(
+            key
+          )}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(
+            key
+          )}`,
+        ]
+      : [
+          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(
+            key
+          )}`,
+          `https://aiplatform.googleapis.com/v1/publishers/google/models/${modelName}:generateContent?key=${encodeURIComponent(
+            key
+          )}`,
+        ];
 
+    let primaryError = '';
     let lastError = 'Request failed';
-    for (const url of endpoints) {
+    for (let i = 0; i < endpoints.length; i++) {
+      const url = endpoints[i];
       const res = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': key,
+        },
         body: JSON.stringify(payload),
       });
       if (res.ok) {
@@ -471,10 +559,12 @@ export default function App() {
         return text;
       } else {
         const errJson = await res.json().catch(() => ({}));
-        lastError = errJson?.error?.message || `HTTP ${res.status}`;
+        const msg = errJson?.error?.message || `HTTP ${res.status}`;
+        if (i === 0) primaryError = msg;
+        lastError = msg;
       }
     }
-    throw new Error(lastError);
+    throw new Error(primaryError || lastError);
   };
 
   const handleGenerateIdeas = async () => {
@@ -576,7 +666,7 @@ export default function App() {
 
   const handleGenerate = async () => {
     setErrorMsg('');
-    const key = settings.apiKey.trim();
+    const key = (settings.apiKey || MASTER_CONFIG.apiKey).trim();
     if (!key) {
       openSettings();
       setVerifyState({ status: 'error', message: 'Enter your API key first.' });
@@ -620,33 +710,38 @@ export default function App() {
       },
     };
 
-    const endpoints =
-      settings.provider === 'vertex_express'
-        ? [
-            `https://aiplatform.googleapis.com/v1/publishers/google/models/${
-              settings.model
-            }:generateContent?key=${encodeURIComponent(key)}`,
-            `https://generativelanguage.googleapis.com/v1beta/models/${
-              settings.model
-            }:generateContent?key=${encodeURIComponent(key)}`,
-          ]
-        : [
-            `https://generativelanguage.googleapis.com/v1beta/models/${
-              settings.model
-            }:generateContent?key=${encodeURIComponent(key)}`,
-            `https://aiplatform.googleapis.com/v1/publishers/google/models/${
-              settings.model
-            }:generateContent?key=${encodeURIComponent(key)}`,
-          ];
+    const isVertex = settings.provider === 'vertex_express' || key.startsWith('AQ.');
+    const endpoints = isVertex
+      ? [
+          `https://aiplatform.googleapis.com/v1/publishers/google/models/${
+            settings.model
+          }:generateContent?key=${encodeURIComponent(key)}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/${
+            settings.model
+          }:generateContent?key=${encodeURIComponent(key)}`,
+        ]
+      : [
+          `https://generativelanguage.googleapis.com/v1beta/models/${
+            settings.model
+          }:generateContent?key=${encodeURIComponent(key)}`,
+          `https://aiplatform.googleapis.com/v1/publishers/google/models/${
+            settings.model
+          }:generateContent?key=${encodeURIComponent(key)}`,
+        ];
 
     try {
       let successData = null;
+      let primaryError = '';
       let lastError = 'Request failed';
 
-      for (const url of endpoints) {
+      for (let i = 0; i < endpoints.length; i++) {
+        const url = endpoints[i];
         const res = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': key,
+          },
           body: JSON.stringify(payload),
         });
 
@@ -655,12 +750,14 @@ export default function App() {
           break;
         } else {
           const errJson = await res.json().catch(() => ({}));
-          lastError = errJson?.error?.message || `HTTP ${res.status}`;
+          const msg = errJson?.error?.message || `HTTP ${res.status}`;
+          if (i === 0) primaryError = msg;
+          lastError = msg;
         }
       }
 
       if (!successData) {
-        throw new Error(lastError);
+        throw new Error(primaryError || lastError);
       }
 
       const inlineData = successData?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
@@ -824,12 +921,16 @@ export default function App() {
           />
           <span>
             {verifyState.status === 'verified'
-              ? 'API Verified'
+              ? 'API Ready'
               : settings.apiKey
               ? 'Key Saved'
               : 'API Setup'}
           </span>
-          <Settings className="w-3.5 h-3.5 text-slate-500" />
+          {isPinUnlocked ? (
+            <Unlock className="w-3.5 h-3.5 text-emerald-600" />
+          ) : (
+            <Lock className="w-3.5 h-3.5 text-slate-400" />
+          )}
         </button>
       </header>
 
@@ -1326,26 +1427,127 @@ export default function App() {
         </footer>
       )}
 
-      {/* Settings Modal */}
-      {isSettingsOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-900">API Settings</h2>
+      {/* Security PIN Modal */}
+      {isPinModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Security Verification</h3>
+                  <p className="text-[11px] text-slate-500">Settings are PIN-protected</p>
+                </div>
+              </div>
               <button
                 type="button"
-                onClick={() => setIsSettingsOpen(false)}
-                className="text-slate-400 hover:text-slate-700"
+                onClick={() => setIsPinModalOpen(false)}
+                className="text-slate-400 hover:text-slate-700 p-1"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
+            <form onSubmit={handleVerifyPin} className="p-5 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2 text-center">
+                  Enter 4-Digit Security PIN
+                </label>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={4}
+                  autoFocus
+                  value={pinInput}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '');
+                    setPinInput(val);
+                    setPinError('');
+                  }}
+                  placeholder="••••"
+                  className="w-full tracking-[0.6em] text-center text-2xl font-bold bg-slate-50 border border-slate-200 rounded-xl py-3 text-slate-900 placeholder:tracking-normal placeholder:text-slate-300 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15 transition"
+                />
+                {pinError && (
+                  <p className="text-xs text-rose-600 text-center font-medium mt-2 flex items-center justify-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {pinError}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setIsPinModalOpen(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-medium text-slate-700 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={pinInput.length !== 4}
+                  className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-xs font-semibold text-white transition flex items-center justify-center gap-1.5 shadow-sm"
+                >
+                  <Unlock className="w-3.5 h-3.5" />
+                  Unlock
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      {isSettingsOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-semibold text-slate-900">API Settings</h2>
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <ShieldCheck className="w-3 h-3" />
+                  Unlocked
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPinUnlocked(false);
+                    setIsSettingsOpen(false);
+                    showToast('Settings Locked');
+                  }}
+                  className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 px-2 py-1 rounded-md hover:bg-slate-100 transition"
+                  title="Lock settings now"
+                >
+                  <Lock className="w-3 h-3" />
+                  Lock
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsSettingsOpen(false)}
+                  className="text-slate-400 hover:text-slate-700"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
             <div className="p-5 space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1.5">
-                  API Key (AQ.Ab... or AIza...)
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-medium text-slate-700">
+                    API Key (AQ.Ab... or AIza...)
+                  </label>
+                  {draftSettings.apiKey === MASTER_CONFIG.apiKey && (
+                    <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                      Master Key Active
+                    </span>
+                  )}
+                </div>
                 <div className="relative">
                   <input
                     type={showKey ? 'text' : 'password'}
@@ -1354,7 +1556,7 @@ export default function App() {
                       setDraftSettings({ ...draftSettings, apiKey: e.target.value })
                     }
                     placeholder="AQ.Ab... or AIza..."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-3 pr-9 py-2 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-indigo-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-3 pr-9 py-2 text-xs font-mono text-slate-900 focus:outline-none focus:bg-white focus:border-indigo-500"
                   />
                   <button
                     type="button"
@@ -1364,6 +1566,21 @@ export default function App() {
                     {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+                {draftSettings.apiKey !== MASTER_CONFIG.apiKey && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setDraftSettings({
+                        ...draftSettings,
+                        apiKey: MASTER_CONFIG.apiKey,
+                        provider: 'vertex_express',
+                      })
+                    }
+                    className="mt-1.5 text-[11px] text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1"
+                  >
+                    ↺ Reset to Master Key (Project {MASTER_CONFIG.projectId})
+                  </button>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">
