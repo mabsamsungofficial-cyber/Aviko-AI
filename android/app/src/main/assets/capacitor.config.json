@@ -1,0 +1,20 @@
+{
+	"appId": "com.scriptvoice.studio",
+	"appName": "ScriptVoice",
+	"webDir": "dist",
+	"android": {
+		"allowMixedContent": false,
+		"adjustMarginsForEdgeToEdge": "force"
+	},
+	"plugins": {
+		"SplashScreen": {
+			"launchShowDuration": 600,
+			"backgroundColor": "#f8fafc"
+		},
+		"StatusBar": {
+			"style": "LIGHT",
+			"backgroundColor": "#ffffff",
+			"overlaysWebView": false
+		}
+	}
+}
