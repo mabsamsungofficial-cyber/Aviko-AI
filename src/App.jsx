@@ -7,7 +7,6 @@ import {
   Play,
   Pause,
   Download,
-  Settings,
   CheckCircle2,
   AlertCircle,
   Loader2,
@@ -25,11 +24,15 @@ import {
   Copy,
   Check,
   BookOpen,
-  Languages,
   Globe,
   Lock,
   Unlock,
   ShieldCheck,
+  Search,
+  Video,
+  Smartphone,
+  Monitor,
+  ExternalLink,
 } from 'lucide-react';
 
 const PREBUILT_VOICES = [
@@ -82,6 +85,11 @@ const STYLE_PRESETS = [
   { label: 'Story', value: 'warm, expressive, and engaging' },
   { label: 'Whisper', value: 'whispered urgently, low volume' },
   { label: 'Serious', value: 'serious, firm, and impactful' },
+];
+
+const FORMAT_OPTIONS = [
+  { id: '9:16', label: '9:16 Shorts / Reels', resolution: '1080×1920', targetDuration: '40–55 sec (105–135 words)' },
+  { id: '16:9', label: '16:9 YouTube', resolution: '1920×1080', targetDuration: '90–140 sec (220–320 words)' },
 ];
 
 const LANGUAGE_OPTIONS = [
@@ -146,32 +154,76 @@ const MASTER_CONFIG = {
 
 const STORAGE_KEY = 'script_voice_studio_v2';
 
-const PROMPT_A = `Act as a practical Indian startup strategist and short-form content creator. Generate 5 unique, actionable, low-investment business ideas tailored for the Indian market (under ₹10,000 investment).
+function buildIdeasPrompt(topicInput, format) {
+  const formatLabel = format === '9:16' ? '9:16 vertical Shorts/Reels' : '16:9 horizontal YouTube explainer';
+  const topicInstruction = topicInput.trim()
+    ? `The user wants ideas related to this topic or niche: "${topicInput.trim()}". Use Google Search to find what is currently trending, timely, or highly relevant around this topic in business, startups, small business operations, or company processes.`
+    : `No specific topic was entered. Use Google Search to find what is currently trending right now in Indian & global business, startups, D2C brands, small business growth, or company operational case studies that a creator can hop on today.`;
 
-Focus on B2B local services, AI/no-code micro-services, and digital commerce. Avoid generic ideas like "start a YouTube channel" or "dropshipping".
+  return `Act as a sharp business researcher, startup analyst, and high-retention explainer video strategist.
 
-Return the output strictly as a JSON array with these keys for each idea:
-- "id": (1 to 5)
-- "title": (Catchy 4-5 word title)
-- "target_customer": (Who pays for this)
-- "core_problem": (What specific problem it solves)
-- "monetization": (How money is made)`;
+${topicInstruction}
 
-function buildPromptB(idea) {
-  return `Write a high-retention 35-second Instagram Reel / YouTube Short script in natural conversational Hinglish (Hindi written in English script, using everyday English business words like 'leads', 'client', 'setup', 'commission').
+Generate 4 unique, high-retention video topic ideas tailored for ${formatLabel} explainers. Avoid generic clickbait or clichés like "start a YouTube channel" or "dropshipping". Every idea must be grounded in a real business mechanism, trend, or verifiable case study.
 
-Selected Business Idea:
-Title: ${idea.title}
-Target Customer: ${idea.target_customer}
-Core Problem: ${idea.core_problem}
-Monetization: ${idea.monetization}
+Return the output strictly as a valid JSON array (no markdown fences, no extra commentary) with 4 objects, each having these exact keys:
+- "id": (number 1 to 4)
+- "title": (Catchy 5-8 word title)
+- "trend_angle": (1 crisp sentence explaining why this topic is trending or timely right now)
+- "target_audience": (Who benefits from watching this: founders, small shop owners, professionals, etc.)
+- "core_process": (The specific business model, process, or mechanism being explained)
+- "fact_hook": (One concrete real-world stat, metric, or verified case-study hook found via search)`;
+}
 
-Strict Rules:
-1. NO robotic intros like "Hello doston" or "Aaj hum baat karenge". Start directly with a punchy 3-second hook.
-2. Keep sentences short, crisp, and punchy (80-100 words total).
-3. Include [Visual Hook] and [On-Screen Text] cues.
-4. End with a single strong Call-To-Action (Save or Comment).
-5. Tone: Practical, direct, and street-smart—not overly formal or salesy.`;
+function buildResearchAndScriptPrompt(topicOrIdea, format, langId) {
+  const fmt = FORMAT_OPTIONS.find((f) => f.id === format) || FORMAT_OPTIONS[0];
+  const langObj = LANGUAGE_OPTIONS.find((l) => l.id === langId) || LANGUAGE_OPTIONS[0];
+
+  const langGuide =
+    langId === 'hinglish'
+      ? 'Natural conversational Hinglish (Hindi written in Roman/English script, blending everyday English business terms like revenue, margin, supply chain, dark store, cashflow). Write numbers clearly for speech (e.g., "10 minute", "40 percent", "500 crore").'
+      : langId === 'hindi'
+      ? 'Natural conversational Hindi in Devanagari script with clear everyday business terms.'
+      : `Clear, engaging, natural ${langObj.label} suitable for spoken narration.`;
+
+  const topicDetails =
+    typeof topicOrIdea === 'string'
+      ? `Topic: ${topicOrIdea}`
+      : `Title: ${topicOrIdea.title}
+Trend Angle: ${topicOrIdea.trend_angle || ''}
+Target Audience: ${topicOrIdea.target_audience || topicOrIdea.target_customer || ''}
+Core Process / Mechanism: ${topicOrIdea.core_process || topicOrIdea.core_problem || ''}
+Initial Fact Hook: ${topicOrIdea.fact_hook || topicOrIdea.monetization || ''}`;
+
+  return `Act as an investigative business researcher and 2D explainer video scriptwriter.
+
+SELECTED TOPIC:
+${topicDetails}
+
+TARGET FORMAT: ${fmt.id} (${fmt.label}, ${fmt.resolution})
+TARGET LENGTH: ${fmt.targetDuration}
+NARRATION LANGUAGE: ${langGuide}
+
+STEP 1 — MANDATORY ONLINE FACT-CHECK & RESEARCH:
+Use Google Search to verify real-world facts, numbers, dates, company processes, unit economics, or case-study details about this topic. Do NOT invent fake statistics or generic AI fluff. Every claim in the script must feel real, grounded, and accurate.
+
+STEP 2 — WRITE TWO SYNCHRONIZED OUTPUTS:
+1. "voiceover_narration": Clean, natural spoken narration ONLY. No brackets, no "[Visual]", no "Scene 1:", no stage directions, no markdown bolding—just the exact spoken words ready for Text-to-Speech. Start directly with a punchy 3-second hook (no robotic "Hello doston" or "Aaj hum baat karenge").
+2. "gemini_video_script": The exact matching production script formatted for a 2D Motion-Graphics Explainer Video Engine. It MUST start with a header:
+   - FORMAT: ${fmt.id} (${fmt.resolution})
+   - TOPIC: <title>
+   - VERIFIED FACTS: <bullet summary of real researched facts>
+   Followed by scene-by-scene blocks ([SCENE 1], [SCENE 2], etc.) where each scene specifies:
+   - [VISUAL / DIAGRAM]: What 2D characters, process flowcharts, split-screens, or animated numbers appear.
+   - [ON-SCREEN TEXT]: Short, high-contrast callout words/numbers.
+   - [NARRATION]: The EXACT verbatim lines from "voiceover_narration" for that scene (word-for-word match is mandatory so the audio timeline stays 100% synced).
+
+Return the output strictly as a valid JSON object (no markdown fences, no extra commentary) with these exact keys:
+{
+  "verified_facts": ["Fact 1 with real figure/detail", "Fact 2...", "Fact 3..."],
+  "gemini_video_script": "...",
+  "voiceover_narration": "..."
+}`;
 }
 
 function extractJsonArray(rawText) {
@@ -184,24 +236,31 @@ function extractJsonArray(rawText) {
   return JSON.parse(cleaned.slice(start, end + 1));
 }
 
+function extractJsonObject(rawText) {
+  const cleaned = rawText.replace(/```json|```/gi, '').trim();
+  const start = cleaned.indexOf('{');
+  const end = cleaned.lastIndexOf('}');
+  if (start === -1 || end === -1 || end <= start) {
+    throw new Error('Could not parse script JSON from response.');
+  }
+  return JSON.parse(cleaned.slice(start, end + 1));
+}
+
 function cleanScriptForVoiceover(rawScript) {
   return rawScript
     .split('\n')
     .map((line) => line.trim())
     .filter((line) => {
       if (!line) return false;
-      if (/^\[?(Visual Hook|On-Screen Text|Audio|Voiceover|CTA|Hook|Scene)\s*[:\]]/i.test(line)) {
-        // Keep spoken text if line is like "Voiceover: ..."
-        if (/^Voiceover\s*:/i.test(line)) return true;
+      if (/^\[?(Visual|On-Screen Text|Audio|Voiceover|CTA|Hook|Scene|FORMAT|TOPIC|VERIFIED FACTS)\s*[:\]]/i.test(line)) {
+        if (/^(\[?NARRATION\]?|Voiceover)\s*:/i.test(line)) return true;
         return false;
       }
       return true;
     })
     .map((line) =>
       line
-        .replace(/^Voiceover\s*:\s*/i, '')
-        .replace(/\[Visual Hook[^\]]*\]/gi, '')
-        .replace(/\[On-Screen Text[^\]]*\]/gi, '')
+        .replace(/^(\[?NARRATION\]?|Voiceover)\s*:\s*/i, '')
         .replace(/\[[^\]]+\]/g, '')
         .trim()
     )
@@ -289,13 +348,22 @@ export default function App() {
   // Sub-tab inside Voiceover: 'script' | 'style'
   const [activeTab, setActiveTab] = useState('script');
 
-  // Story State
+  // Story & Research State
+  const [topicInput, setTopicInput] = useState('');
+  const [videoFormat, setVideoFormat] = useState('9:16');
   const [ideas, setIdeas] = useState([]);
   const [selectedIdeaId, setSelectedIdeaId] = useState(null);
   const [isLoadingIdeas, setIsLoadingIdeas] = useState(false);
-  const [storyScript, setStoryScript] = useState('');
   const [isLoadingStory, setIsLoadingStory] = useState(false);
-  const [copiedStory, setCopiedStory] = useState(false);
+
+  // Dual Script & Research Outputs
+  const [verifiedFacts, setVerifiedFacts] = useState([]);
+  const [searchSources, setSearchSources] = useState([]);
+  const [searchGrounded, setSearchGrounded] = useState(false);
+  const [geminiVideoScript, setGeminiVideoScript] = useState('');
+  const [voiceoverNarration, setVoiceoverNarration] = useState('');
+  const [copiedVideoScript, setCopiedVideoScript] = useState(false);
+  const [copiedNarration, setCopiedNarration] = useState(false);
 
   // Voiceover State
   const [script, setScript] = useState(
@@ -459,51 +527,73 @@ export default function App() {
     showToast('Settings saved');
   };
 
-  const callTextModelWithSearch = async (promptText) => {
+  const callTextModelWithSearch = async (promptText, enableSearch = true) => {
     const key = (settings.apiKey || MASTER_CONFIG.apiKey).trim();
     const modelName = settings.textModel || 'gemini-3.5-flash-lite';
-    const payload = {
-      contents: [{ role: 'user', parts: [{ text: promptText }] }],
+
+    const runRequest = async (useSearchTool) => {
+      const payload = {
+        contents: [{ role: 'user', parts: [{ text: promptText }] }],
+        ...(useSearchTool ? { tools: [{ google_search: {} }] } : {}),
+      };
+
+      const endpoints = [
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(
+          key
+        )}`,
+        `https://aiplatform.googleapis.com/v1/publishers/google/models/${modelName}:generateContent?key=${encodeURIComponent(
+          key
+        )}`,
+      ];
+
+      let primaryError = '';
+      let lastError = 'Request failed';
+      for (let i = 0; i < endpoints.length; i++) {
+        const url = endpoints[i];
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': key,
+          },
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const candidate = data?.candidates?.[0];
+          const parts = candidate?.content?.parts || [];
+          const text = parts
+            .map((p) => p.text || '')
+            .join('')
+            .trim();
+          if (!text) throw new Error('Empty response from model.');
+
+          const chunks = candidate?.groundingMetadata?.groundingChunks || [];
+          const sources = chunks
+            .map((c) => c?.web)
+            .filter((w) => w?.uri)
+            .map((w) => ({ title: w.title || w.uri, uri: w.uri }));
+
+          return { text, sources, grounded: useSearchTool };
+        } else {
+          const errJson = await res.json().catch(() => ({}));
+          const msg = errJson?.error?.message || `HTTP ${res.status}`;
+          if (i === 0) primaryError = msg;
+          lastError = msg;
+        }
+      }
+      throw new Error(primaryError || lastError);
     };
 
-    const endpoints = [
-      `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(
-        key
-      )}`,
-      `https://aiplatform.googleapis.com/v1/publishers/google/models/${modelName}:generateContent?key=${encodeURIComponent(
-        key
-      )}`,
-    ];
-
-    let primaryError = '';
-    let lastError = 'Request failed';
-    for (let i = 0; i < endpoints.length; i++) {
-      const url = endpoints[i];
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': key,
-        },
-        body: JSON.stringify(payload),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const parts = data?.candidates?.[0]?.content?.parts || [];
-        const text = parts
-          .map((p) => p.text || '')
-          .join('')
-          .trim();
-        if (!text) throw new Error('Empty response from model.');
-        return text;
-      } else {
-        const errJson = await res.json().catch(() => ({}));
-        const msg = errJson?.error?.message || `HTTP ${res.status}`;
-        if (i === 0) primaryError = msg;
-        lastError = msg;
+    if (enableSearch) {
+      try {
+        return await runRequest(true);
+      } catch {
+        // Fallback without google_search if endpoint/model doesn't support search grounding
+        return await runRequest(false);
       }
     }
-    throw new Error(primaryError || lastError);
+    return await runRequest(false);
   };
 
   const handleGenerateIdeas = async () => {
@@ -516,14 +606,19 @@ export default function App() {
 
     setIsLoadingIdeas(true);
     try {
-      const rawText = await callTextModelWithSearch(PROMPT_A);
-      const parsed = extractJsonArray(rawText);
+      const { text, sources, grounded } = await callTextModelWithSearch(
+        buildIdeasPrompt(topicInput, videoFormat),
+        true
+      );
+      const parsed = extractJsonArray(text);
       if (!Array.isArray(parsed) || parsed.length === 0) {
         throw new Error('No ideas found in response.');
       }
-      setIdeas(parsed);
+      setIdeas(parsed.slice(0, 5));
       setSelectedIdeaId(parsed[0]?.id ?? null);
-      showToast('5 Daily Ideas ready');
+      setSearchSources(sources);
+      setSearchGrounded(grounded);
+      showToast(`${Math.min(parsed.length, 5)} Trending Ideas ready`);
     } catch (err) {
       setErrorMsg(err?.message || 'Failed to generate ideas.');
     } finally {
@@ -531,7 +626,7 @@ export default function App() {
     }
   };
 
-  const handleGenerateStoryScript = async () => {
+  const runFactCheckedScript = async (topicOrIdea) => {
     setErrorMsg('');
     if (!settings.apiKey.trim()) {
       openSettings();
@@ -539,47 +634,83 @@ export default function App() {
       return;
     }
 
-    const selected = ideas.find((item) => item.id === selectedIdeaId);
-    if (!selected) {
-      setErrorMsg('Select an idea first.');
-      return;
-    }
-
     setIsLoadingStory(true);
     try {
-      const text = await callTextModelWithSearch(buildPromptB(selected));
-      setStoryScript(text);
-      showToast('Script generated');
+      const { text, sources, grounded } = await callTextModelWithSearch(
+        buildResearchAndScriptPrompt(topicOrIdea, videoFormat, language),
+        true
+      );
+
+      let parsedObj = null;
+      try {
+        parsedObj = extractJsonObject(text);
+      } catch {
+        // Graceful fallback if model returned plain text
+        parsedObj = {
+          verified_facts: [],
+          gemini_video_script: text,
+          voiceover_narration: cleanScriptForVoiceover(text),
+        };
+      }
+
+      const vScript = (parsedObj.gemini_video_script || '').trim();
+      const vNarration = (
+        parsedObj.voiceover_narration || cleanScriptForVoiceover(vScript)
+      ).trim();
+
+      setVerifiedFacts(Array.isArray(parsedObj.verified_facts) ? parsedObj.verified_facts : []);
+      setSearchSources(sources);
+      setSearchGrounded(grounded);
+      setGeminiVideoScript(vScript);
+      setVoiceoverNarration(vNarration);
+      showToast('Fact-checked scripts ready');
     } catch (err) {
-      setErrorMsg(err?.message || 'Failed to generate story script.');
+      setErrorMsg(err?.message || 'Failed to research & generate script.');
     } finally {
       setIsLoadingStory(false);
     }
   };
 
-  const copyStoryToClipboard = () => {
-    if (!storyScript) return;
+  const handleGenerateStoryScript = async () => {
+    const selected = ideas.find((item) => item.id === selectedIdeaId);
+    if (!selected) {
+      setErrorMsg('Select an idea first or type a topic above.');
+      return;
+    }
+    await runFactCheckedScript(selected);
+  };
+
+  const handleDirectTopicScript = async () => {
+    if (!topicInput.trim()) {
+      setErrorMsg('Enter a topic first, or click "Generate Ideas".');
+      return;
+    }
+    await runFactCheckedScript(topicInput.trim());
+  };
+
+  const copyText = (value, onCopied) => {
+    if (!value) return;
     if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(storyScript).catch(() => {});
+      navigator.clipboard.writeText(value).catch(() => {});
     } else {
       const el = document.createElement('textarea');
-      el.value = storyScript;
+      el.value = value;
       document.body.appendChild(el);
       el.select();
       document.execCommand('copy');
       document.body.removeChild(el);
     }
-    setCopiedStory(true);
-    setTimeout(() => setCopiedStory(false), 1800);
+    onCopied(true);
+    setTimeout(() => onCopied(false), 1800);
   };
 
   const sendToVoiceover = () => {
-    if (!storyScript.trim()) return;
-    const spokenOnly = cleanScriptForVoiceover(storyScript);
-    setScript(spokenOnly || storyScript);
+    const cleanText = voiceoverNarration.trim() || cleanScriptForVoiceover(geminiVideoScript);
+    if (!cleanText) return;
+    setScript(cleanText);
     setActiveSection('voiceover');
     setActiveTab('script');
-    showToast('Loaded into Voiceover');
+    showToast('Narration loaded into Voiceover');
   };
 
   const insertTag = (tag) => {
@@ -738,7 +869,6 @@ export default function App() {
     if (!audioBlob && !audioUrl) return;
     const filename = `voiceover_${Date.now()}.wav`;
 
-    // Native Android: save WAV into Documents and open the share sheet
     if (Capacitor.isNativePlatform() && audioBlob) {
       try {
         const data = await blobToBase64(audioBlob);
@@ -817,7 +947,7 @@ export default function App() {
               }`}
             >
               <BookOpen className="w-3.5 h-3.5" />
-              Story
+              Research &amp; Script
             </button>
             <button
               type="button"
@@ -874,7 +1004,7 @@ export default function App() {
             }`}
           >
             <BookOpen className="w-3.5 h-3.5" />
-            Story
+            Research &amp; Script
           </button>
           <button
             type="button"
@@ -909,120 +1039,304 @@ export default function App() {
           </div>
         )}
 
-        {/* SECTION 1: STORY */}
+        {/* SECTION 1: TOPIC RESEARCH & SCRIPT */}
         {activeSection === 'story' && (
           <div className="space-y-4">
-            {/* Daily Ideas Header */}
+            {/* Topic Input + Format + Generate Ideas */}
             <section className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <Lightbulb className="w-4 h-4 text-amber-500" />
                   <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">
-                    Daily Ideas
+                    Topic Research &amp; Trending Ideas
                   </span>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleGenerateIdeas}
-                  disabled={isLoadingIdeas}
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
-                >
-                  {isLoadingIdeas ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Researching...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>Generate Daily Ideas</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {ideas.length === 0 ? (
-                <div className="py-10 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">
-                  Click "Generate Daily Ideas" to fetch 5 ideas
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-2.5">
-                  {ideas.map((idea) => {
-                    const isSelected = idea.id === selectedIdeaId;
+                {/* Format Selector: 9:16 vs 16:9 */}
+                <div className="inline-flex items-center bg-slate-100 border border-slate-200 rounded-lg p-0.5">
+                  {FORMAT_OPTIONS.map((fmt) => {
+                    const active = videoFormat === fmt.id;
                     return (
                       <button
-                        key={idea.id}
+                        key={fmt.id}
                         type="button"
-                        onClick={() => setSelectedIdeaId(idea.id)}
-                        className={`text-left p-3.5 rounded-xl border transition ${
-                          isSelected
-                            ? 'bg-indigo-50/70 border-indigo-400 ring-1 ring-indigo-400/40'
-                            : 'bg-slate-50/70 border-slate-200 hover:border-slate-300'
+                        onClick={() => setVideoFormat(fmt.id)}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold transition ${
+                          active
+                            ? 'bg-white text-indigo-600 shadow-sm'
+                            : 'text-slate-600 hover:text-slate-900'
                         }`}
                       >
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <span className="text-sm font-semibold text-slate-900">
-                            {idea.id}. {idea.title}
-                          </span>
-                          {isSelected && (
-                            <span className="px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-semibold">
-                              Selected
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-slate-600 leading-relaxed">
-                          <span className="font-medium text-slate-700">Customer:</span>{' '}
-                          {idea.target_customer} ·{' '}
-                          <span className="font-medium text-slate-700">Problem:</span>{' '}
-                          {idea.core_problem} ·{' '}
-                          <span className="font-medium text-slate-700">Revenue:</span>{' '}
-                          {idea.monetization}
-                        </p>
+                        {fmt.id === '9:16' ? (
+                          <Smartphone className="w-3 h-3" />
+                        ) : (
+                          <Monitor className="w-3 h-3" />
+                        )}
+                        <span>{fmt.id}</span>
                       </button>
                     );
                   })}
                 </div>
-              )}
+              </div>
 
-              {ideas.length > 0 && (
-                <div className="flex justify-end pt-1">
-                  <button
-                    type="button"
-                    onClick={handleGenerateStoryScript}
-                    disabled={isLoadingStory || !selectedIdeaId}
-                    className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-1.5 transition"
-                  >
-                    {isLoadingStory ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        <span>Writing Script...</span>
-                      </>
-                    ) : (
-                      <>
-                        <FileText className="w-3.5 h-3.5" />
-                        <span>Generate Script</span>
-                      </>
+              {/* Topic Search / Input Box */}
+              <div className="space-y-2.5">
+                <div className="relative">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                  <input
+                    type="text"
+                    value={topicInput}
+                    onChange={(e) => setTopicInput(e.target.value)}
+                    placeholder="Enter a topic (e.g. Zepto dark stores, Kirana scaling) or leave blank for trending ideas..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-9 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15 transition"
+                  />
+                  {topicInput && (
+                    <button
+                      type="button"
+                      onClick={() => setTopicInput('')}
+                      className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                      title="Clear topic"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  {/* Quick Language Selector */}
+                  <div className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200/70 rounded-lg px-2.5 py-1.5 border border-slate-200 transition">
+                    <Globe className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                    <select
+                      value={language}
+                      onChange={(e) => updateLanguage(e.target.value)}
+                      className="bg-transparent text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer"
+                    >
+                      {LANGUAGE_OPTIONS.map((l) => (
+                        <option key={l.id} value={l.id}>
+                          {l.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 ml-auto">
+                    <button
+                      type="button"
+                      onClick={handleGenerateIdeas}
+                      disabled={isLoadingIdeas || isLoadingStory}
+                      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
+                    >
+                      {isLoadingIdeas ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Searching Trends...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Generate Ideas</span>
+                        </>
+                      )}
+                    </button>
+
+                    {topicInput.trim() && (
+                      <button
+                        type="button"
+                        onClick={handleDirectTopicScript}
+                        disabled={isLoadingStory || isLoadingIdeas}
+                        className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-60 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
+                      >
+                        {isLoadingStory ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span>Fact-Checking...</span>
+                          </>
+                        ) : (
+                          <>
+                            <FileText className="w-3.5 h-3.5" />
+                            <span>Research &amp; Write Script</span>
+                          </>
+                        )}
+                      </button>
                     )}
-                  </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ideas List (3-5 Trending Topics) */}
+              {ideas.length === 0 ? (
+                <div className="py-8 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl px-4">
+                  Click <strong>&ldquo;Generate Ideas&rdquo;</strong> to search 4 trending business/startup topics, or type your own topic above and click <strong>&ldquo;Research &amp; Write Script&rdquo;</strong>.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {ideas.map((idea) => {
+                      const isSelected = idea.id === selectedIdeaId;
+                      return (
+                        <button
+                          key={idea.id}
+                          type="button"
+                          onClick={() => setSelectedIdeaId(idea.id)}
+                          className={`text-left p-3.5 rounded-xl border transition ${
+                            isSelected
+                              ? 'bg-indigo-50/70 border-indigo-400 ring-1 ring-indigo-400/40'
+                              : 'bg-slate-50/70 border-slate-200 hover:border-slate-300'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="text-sm font-semibold text-slate-900">
+                              {idea.id}. {idea.title}
+                            </span>
+                            {isSelected && (
+                              <span className="px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-semibold shrink-0">
+                                Selected
+                              </span>
+                            )}
+                          </div>
+                          {idea.trend_angle && (
+                            <p className="text-xs text-indigo-700 font-medium mb-1">
+                              {idea.trend_angle}
+                            </p>
+                          )}
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            <span className="font-medium text-slate-700">Process:</span>{' '}
+                            {idea.core_process || idea.core_problem} ·{' '}
+                            <span className="font-medium text-slate-700">Fact Hook:</span>{' '}
+                            {idea.fact_hook || idea.monetization}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex justify-end pt-1">
+                    <button
+                      type="button"
+                      onClick={handleGenerateStoryScript}
+                      disabled={isLoadingStory || !selectedIdeaId}
+                      className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-1.5 transition"
+                    >
+                      {isLoadingStory ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Verifying Facts &amp; Writing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>Fact-Check &amp; Generate Script</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               )}
             </section>
 
-            {/* Generated Story Script Card */}
-            {storyScript && (
+            {/* Verified Facts & Sources */}
+            {(verifiedFacts.length > 0 || searchSources.length > 0) && (
+              <section className="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-4 space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    Verified Research Facts
+                  </span>
+                  {searchGrounded && (
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
+                      Google Search Grounded
+                    </span>
+                  )}
+                </div>
+
+                {verifiedFacts.length > 0 && (
+                  <ul className="space-y-1 text-xs text-emerald-950 list-disc pl-4">
+                    {verifiedFacts.map((fact, idx) => (
+                      <li key={idx} className="leading-relaxed">
+                        {fact}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {searchSources.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {searchSources.slice(0, 5).map((src, idx) => (
+                      <a
+                        key={idx}
+                        href={src.uri}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-emerald-200 text-[10px] font-medium text-emerald-700 hover:bg-emerald-100 transition max-w-[200px] truncate"
+                      >
+                        <ExternalLink className="w-2.5 h-2.5 shrink-0" />
+                        <span className="truncate">{src.title}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* BOX 1: Gemini Video Script (Paste into Gemini with Master Prompt) */}
+            {geminiVideoScript && (
               <section className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    Generated Script
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <Video className="w-4 h-4 text-indigo-600" />
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">
+                      1. Gemini Video Script ({videoFormat})
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => copyText(geminiVideoScript, setCopiedVideoScript)}
+                    className="px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-xs font-semibold text-indigo-700 flex items-center gap-1.5 transition"
+                  >
+                    {copiedVideoScript ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        Copy for Gemini
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <p className="text-[11px] text-slate-500">
+                  Paste this into Gemini alongside your <strong>Business Explainer Master Prompt</strong> and generated audio file.
+                </p>
+
+                <textarea
+                  rows={9}
+                  value={geminiVideoScript}
+                  onChange={(e) => setGeminiVideoScript(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs font-mono leading-relaxed text-slate-800 focus:outline-none focus:bg-white focus:border-indigo-500 resize-y"
+                />
+              </section>
+            )}
+
+            {/* BOX 2: Clean Voiceover Narration (TTS Ready) */}
+            {voiceoverNarration && (
+              <section className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Volume2 className="w-4 h-4 text-emerald-600" />
+                    <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">
+                      2. Voiceover Narration (TTS Ready)
+                    </span>
+                  </div>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={copyStoryToClipboard}
-                      className="px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-medium text-slate-700 flex items-center gap-1 transition"
+                      onClick={() => copyText(voiceoverNarration, setCopiedNarration)}
+                      className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-medium text-slate-700 flex items-center gap-1 transition"
                     >
-                      {copiedStory ? (
+                      {copiedNarration ? (
                         <>
                           <Check className="w-3.5 h-3.5 text-emerald-600" />
                           Copied
@@ -1030,7 +1344,7 @@ export default function App() {
                       ) : (
                         <>
                           <Copy className="w-3.5 h-3.5" />
-                          Copy
+                          Copy Narration
                         </>
                       )}
                     </button>
@@ -1040,16 +1354,16 @@ export default function App() {
                       onClick={sendToVoiceover}
                       className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
                     >
-                      <span>Use for Voiceover</span>
+                      <span>Generate Voiceover</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
 
                 <textarea
-                  rows={8}
-                  value={storyScript}
-                  onChange={(e) => setStoryScript(e.target.value)}
+                  rows={6}
+                  value={voiceoverNarration}
+                  onChange={(e) => setVoiceoverNarration(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm leading-relaxed text-slate-800 focus:outline-none focus:bg-white focus:border-indigo-500 resize-y"
                 />
               </section>
@@ -1084,7 +1398,7 @@ export default function App() {
                   }`}
                 >
                   <Sliders className="w-3.5 h-3.5" />
-                  Style & Language
+                  Style &amp; Language
                 </button>
               </div>
 
@@ -1111,7 +1425,6 @@ export default function App() {
                     Script
                   </span>
                   <div className="flex items-center gap-2 sm:gap-3">
-                    {/* Quick Language Selector on Script Box */}
                     <div className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200/70 rounded-lg px-2 py-1 border border-slate-200 transition">
                       <Globe className="w-3 h-3 text-indigo-600 shrink-0" />
                       <select
@@ -1195,11 +1508,10 @@ export default function App() {
                   </select>
                 </div>
 
-                {/* Language & Accent Tone Selector */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
-                      Language & Accent Tone
+                      Language &amp; Accent Tone
                     </label>
                     <span className="text-[11px] text-indigo-600 font-semibold">
                       {LANGUAGE_OPTIONS.find((l) => l.id === language)?.label} ({LANGUAGE_OPTIONS.find((l) => l.id === language)?.nativeLabel})
@@ -1235,7 +1547,7 @@ export default function App() {
                     })}
                   </div>
                   <div className="mt-2.5 p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/80 text-[11px] text-amber-900 leading-relaxed">
-                    <strong>💡 Accent Tip:</strong> Agar script mein pehla word English hai (e.g. <em>ScriptVoice</em>, <em>Startup</em>) par poori script Hindi/Hinglish hai, toh <strong>Hinglish</strong> chunein. Isse AI English tone mein nahi balki natural Desi/Indian tone mein bolega.
+                    <strong>Accent Tip:</strong> Agar script mein pehla word English hai (e.g. <em>ScriptVoice</em>, <em>Startup</em>) par poori script Hindi/Hinglish hai, toh <strong>Hinglish</strong> chunein. Isse AI English tone mein nahi balki natural Desi/Indian tone mein bolega.
                   </div>
                 </div>
 
