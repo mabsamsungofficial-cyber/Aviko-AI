@@ -25,6 +25,8 @@ import {
   Copy,
   Check,
   BookOpen,
+  Languages,
+  Globe,
 } from 'lucide-react';
 
 const PREBUILT_VOICES = [
@@ -76,6 +78,57 @@ const STYLE_PRESETS = [
   { label: 'Story', value: 'warm, expressive, and engaging' },
   { label: 'Whisper', value: 'whispered urgently, low volume' },
   { label: 'Serious', value: 'serious, firm, and impactful' },
+];
+
+const LANGUAGE_OPTIONS = [
+  {
+    id: 'hinglish',
+    label: 'Hinglish',
+    nativeLabel: 'हिंग्लिश (Indian Tone)',
+    description: 'Hindi in Roman letters with natural Indian accent',
+    instruction:
+      'Spoken in natural conversational Hinglish with an authentic, friendly Indian accent. Crucially, pronounce all Hindi words with fluent, natural Indian pronunciation and do NOT adopt an American, British, or foreign accent, even if the sentence starts with English words. Blend English and Hindi smoothly.',
+  },
+  {
+    id: 'hindi',
+    label: 'Hindi',
+    nativeLabel: 'शुद्ध हिन्दी Accent',
+    description: 'Authentic Indian Hindi pronunciation',
+    instruction:
+      'Spoken in fluent native Hindi with an authentic Indian accent and clear, natural Hindi pronunciation.',
+  },
+  {
+    id: 'english_in',
+    label: 'English (IN)',
+    nativeLabel: 'Indian English Accent',
+    description: 'Modern natural Indian English accent',
+    instruction:
+      'Spoken in clear, fluent English with a natural modern Indian accent and professional cadence.',
+  },
+  {
+    id: 'english_us',
+    label: 'English (US)',
+    nativeLabel: 'American Accent',
+    description: 'Standard modern American English',
+    instruction:
+      'Spoken in clear, natural American English accent with crisp pronunciation.',
+  },
+  {
+    id: 'english_uk',
+    label: 'English (UK)',
+    nativeLabel: 'British Accent',
+    description: 'Crisp British English accent',
+    instruction:
+      'Spoken in crisp, refined British English accent with natural pacing.',
+  },
+  {
+    id: 'urdu',
+    label: 'Urdu',
+    nativeLabel: 'اردو / Desi Tone',
+    description: 'Subcontinent Urdu / Hindustani tone',
+    instruction:
+      'Spoken in natural, expressive Urdu / Hindustani with authentic subcontinent pronunciation, warm tone, and natural cadence.',
+  },
 ];
 
 const VOCAL_TAGS = ['<short pause>', '<sigh>', '<laugh>', '<gasp>', '<cough>'];
@@ -205,6 +258,7 @@ export default function App() {
     model: 'gemini-3.8-flash-tts',
     textModel: 'gemini-3.8-flash',
     voice: 'Kore',
+    language: 'hinglish',
     provider: 'aistudio', // aistudio | vertex_express
   });
   const [draftSettings, setDraftSettings] = useState(settings);
@@ -230,6 +284,7 @@ export default function App() {
     'रुकिए! <short pause> क्या आप जानते हैं कि ninety percent लोग ये एक गलती रोज़ करते हैं?'
   );
   const [style, setStyle] = useState('curious, energetic, and fast-paced');
+  const [language, setLanguage] = useState('hinglish');
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -251,6 +306,9 @@ export default function App() {
         const parsed = JSON.parse(raw);
         setSettings((prev) => ({ ...prev, ...parsed }));
         setDraftSettings((prev) => ({ ...prev, ...parsed }));
+        if (parsed.language) {
+          setLanguage(parsed.language);
+        }
         if (parsed.apiKey) {
           setVerifyState({ status: 'idle', message: 'Saved API key loaded' });
         }
@@ -259,6 +317,17 @@ export default function App() {
       // Ignore storage errors
     }
   }, []);
+
+  const updateLanguage = (newLang) => {
+    setLanguage(newLang);
+    const updated = { ...settings, language: newLang };
+    setSettings(updated);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch {
+      // Ignore
+    }
+  };
 
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
@@ -524,6 +593,13 @@ export default function App() {
     setIsPlaying(false);
     if (audioRef.current) audioRef.current.pause();
 
+    const activeLang =
+      LANGUAGE_OPTIONS.find((l) => l.id === language) || LANGUAGE_OPTIONS[0];
+    const userStyle = style.trim() || 'natural and clear';
+    const computedSpeechStyle = activeLang?.instruction
+      ? `${activeLang.instruction} Delivery style: ${userStyle}.`
+      : userStyle;
+
     const payload = {
       contents: [
         {
@@ -531,7 +607,7 @@ export default function App() {
           parts: [
             {
               text: script.trim(),
-              speechMetadata: { style: style.trim() || 'natural and clear' },
+              speechMetadata: { style: computedSpeechStyle },
             },
           ],
         },
@@ -978,7 +1054,7 @@ export default function App() {
                   }`}
                 >
                   <Sliders className="w-3.5 h-3.5" />
-                  Voice Style
+                  Style & Language
                 </button>
               </div>
 
@@ -989,7 +1065,11 @@ export default function App() {
               >
                 <span className="font-medium text-slate-900">{settings.voice}</span>
                 <span className="text-slate-300">·</span>
-                <span className="max-w-[160px] truncate">{style || 'Natural'}</span>
+                <span className="text-indigo-600 font-semibold">
+                  {LANGUAGE_OPTIONS.find((l) => l.id === language)?.label || 'Hinglish'}
+                </span>
+                <span className="text-slate-300">·</span>
+                <span className="max-w-[140px] truncate">{style || 'Natural'}</span>
               </button>
             </div>
 
@@ -1000,7 +1080,24 @@ export default function App() {
                   <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                     Script
                   </span>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    {/* Quick Language Selector on Script Box */}
+                    <div className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200/70 rounded-lg px-2 py-1 border border-slate-200 transition">
+                      <Globe className="w-3 h-3 text-indigo-600 shrink-0" />
+                      <select
+                        value={language}
+                        onChange={(e) => updateLanguage(e.target.value)}
+                        className="bg-transparent text-[11px] font-semibold text-slate-700 focus:outline-none cursor-pointer"
+                        title="Voice language & accent"
+                      >
+                        {LANGUAGE_OPTIONS.map((l) => (
+                          <option key={l.id} value={l.id}>
+                            {l.label} · {l.nativeLabel}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
                     <span className="text-xs text-slate-400 tabular-nums">
                       {script.length} chars
                     </span>
@@ -1040,7 +1137,7 @@ export default function App() {
               </section>
             )}
 
-            {/* Sub-tab 2: Voice Style */}
+            {/* Sub-tab 2: Voice Style & Language */}
             {activeTab === 'style' && (
               <section className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-5">
                 <div>
@@ -1066,6 +1163,50 @@ export default function App() {
                       </option>
                     ))}
                   </select>
+                </div>
+
+                {/* Language & Accent Tone Selector */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      Language & Accent Tone
+                    </label>
+                    <span className="text-[11px] text-indigo-600 font-semibold">
+                      {LANGUAGE_OPTIONS.find((l) => l.id === language)?.label} ({LANGUAGE_OPTIONS.find((l) => l.id === language)?.nativeLabel})
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {LANGUAGE_OPTIONS.map((lang) => {
+                      const isSelected = language === lang.id;
+                      return (
+                        <button
+                          key={lang.id}
+                          type="button"
+                          onClick={() => updateLanguage(lang.id)}
+                          className={`flex flex-col items-start p-2.5 rounded-xl border text-left transition ${
+                            isSelected
+                              ? 'bg-indigo-50/80 border-indigo-500 ring-2 ring-indigo-500/20 text-indigo-950 shadow-sm'
+                              : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between w-full">
+                            <span className="text-xs font-bold text-slate-900">{lang.label}</span>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-indigo-600 stroke-[2.5]" />}
+                          </div>
+                          <span className="text-[10px] text-indigo-700 font-medium mt-0.5">
+                            {lang.nativeLabel}
+                          </span>
+                          <span className="text-[9px] text-slate-400 line-clamp-1 mt-0.5">
+                            {lang.description}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-2.5 p-2.5 rounded-xl bg-amber-50/80 border border-amber-200/80 text-[11px] text-amber-900 leading-relaxed">
+                    <strong>💡 Accent Tip:</strong> Agar script mein pehla word English hai (e.g. <em>ScriptVoice</em>, <em>Startup</em>) par poori script Hindi/Hinglish hai, toh <strong>Hinglish</strong> chunein. Isse AI English tone mein nahi balki natural Desi/Indian tone mein bolega.
+                  </div>
                 </div>
 
                 <div>
