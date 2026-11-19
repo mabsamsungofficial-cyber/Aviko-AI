@@ -88,8 +88,8 @@ const STYLE_PRESETS = [
 ];
 
 const FORMAT_OPTIONS = [
-  { id: '9:16', label: '9:16 Shorts / Reels', resolution: '1080×1920', targetDuration: '40–55 sec (105–135 words)' },
-  { id: '16:9', label: '16:9 YouTube', resolution: '1920×1080', targetDuration: '90–140 sec (220–320 words)' },
+  { id: '9:16', label: '9:16 Shorts / Reels', resolution: '1080×1920', targetDuration: '45–60 sec (115–145 words at 140 WPM)' },
+  { id: '16:9', label: '16:9 YouTube', resolution: '1920×1080', targetDuration: '95–120 sec (220–280 words at 140 WPM)' },
 ];
 
 const LANGUAGE_OPTIONS = [
@@ -195,34 +195,37 @@ Target Audience: ${topicOrIdea.target_audience || topicOrIdea.target_customer ||
 Core Process / Mechanism: ${topicOrIdea.core_process || topicOrIdea.core_problem || ''}
 Initial Fact Hook: ${topicOrIdea.fact_hook || topicOrIdea.monetization || ''}`;
 
-  return `Act as an investigative business researcher and 2D explainer video scriptwriter.
+  return `Act as an investigative business researcher and viral 2D explainer scriptwriter.
 
 SELECTED TOPIC:
 ${topicDetails}
 
 TARGET FORMAT: ${fmt.id} (${fmt.label}, ${fmt.resolution})
-TARGET LENGTH: ${fmt.targetDuration}
+STRICT WORD BUDGET (140 WPM): ${fmt.targetDuration}
 NARRATION LANGUAGE: ${langGuide}
 
-STEP 1 — MANDATORY ONLINE FACT-CHECK & RESEARCH:
-Use Google Search to verify real-world facts, numbers, dates, company processes, unit economics, or case-study details about this topic. Do NOT invent fake statistics or generic AI fluff. Every claim in the script must feel real, grounded, and accurate.
+STEP 1 — MANDATORY ONLINE FACT-CHECK:
+Use Google Search to verify real-world facts, numbers, dates, company processes, unit economics, or case-study details. NEVER invent fake statistics or generic AI fluff.
 
-STEP 2 — WRITE TWO SYNCHRONIZED OUTPUTS:
-1. "voiceover_narration": Clean, natural spoken narration ONLY. No brackets, no "[Visual]", no "Scene 1:", no stage directions, no markdown bolding—just the exact spoken words ready for Text-to-Speech. Start directly with a punchy 3-second hook (no robotic "Hello doston" or "Aaj hum baat karenge").
-2. "gemini_video_script": The exact matching production script formatted for a 2D Motion-Graphics Explainer Video Engine. It MUST start with a header:
-   - FORMAT: ${fmt.id} (${fmt.resolution})
-   - TOPIC: <title>
-   - VERIFIED FACTS: <bullet summary of real researched facts>
-   Followed by scene-by-scene blocks ([SCENE 1], [SCENE 2], etc.) where each scene specifies:
-   - [VISUAL / DIAGRAM]: What 2D characters, process flowcharts, split-screens, or animated numbers appear.
-   - [ON-SCREEN TEXT]: Short, high-contrast callout words/numbers.
-   - [NARRATION]: The EXACT verbatim lines from "voiceover_narration" for that scene (word-for-word match is mandatory so the audio timeline stays 100% synced).
+STEP 2 — 9-STEP HIGH-RETENTION STORYTELLING ARC (FLOWING CONTINUOUSLY):
+Weave these naturally into ONE uninterrupted narration (no headings inside the voiceover):
+1. Punchy 3–5 sec Hook (shocking stat, contradiction, or mystery—NEVER start with "Hello doston", "Namaste", or "Aaj hum baat karenge").
+2. Relatable business problem or market context.
+3. Founder / customer / company introduced naturally.
+4. Step-by-step operational process or mechanism.
+5. Curiosity gap (e.g., "Lekin asli game yahan shuru hota hai...") to hold retention.
+6. Hidden unit-economics twist or insight.
+7. Scale / real-world impact.
+8. Crisp practical takeaway.
+9. Thought-provoking question + short natural CTA.
 
-Return the output strictly as a valid JSON object (no markdown fences, no extra commentary) with these exact keys:
+STEP 3 — RETURN STRICT JSON OBJECT (no markdown fences, no extra commentary):
 {
   "verified_facts": ["Fact 1 with real figure/detail", "Fact 2...", "Fact 3..."],
-  "gemini_video_script": "...",
-  "voiceover_narration": "..."
+  "youtube_titles": ["Clickable truthful title 1", "Title 2", "Title 3"],
+  "thumbnail_text": "2–4 word high-contrast hook",
+  "voiceover_narration": "Pure spoken narration ONLY hitting the exact word budget. Zero brackets, zero [Scene]/[Visual] tags, zero speaker labels.",
+  "gemini_video_script": "Start with FORMAT: ${fmt.id} (${fmt.resolution}) and TOPIC. Then [SCENE 1], [SCENE 2]... with [VISUAL / DIAGRAM], [ON-SCREEN TEXT], and [NARRATION] matching voiceover_narration word-for-word."
 }`;
 }
 
@@ -362,6 +365,8 @@ export default function App() {
   const [searchGrounded, setSearchGrounded] = useState(false);
   const [geminiVideoScript, setGeminiVideoScript] = useState('');
   const [voiceoverNarration, setVoiceoverNarration] = useState('');
+  const [youtubeTitles, setYoutubeTitles] = useState([]);
+  const [thumbnailText, setThumbnailText] = useState('');
   const [copiedVideoScript, setCopiedVideoScript] = useState(false);
   const [copiedNarration, setCopiedNarration] = useState(false);
 
@@ -663,6 +668,8 @@ export default function App() {
       setSearchGrounded(grounded);
       setGeminiVideoScript(vScript);
       setVoiceoverNarration(vNarration);
+      setYoutubeTitles(Array.isArray(parsedObj.youtube_titles) ? parsedObj.youtube_titles : []);
+      setThumbnailText((parsedObj.thumbnail_text || '').trim());
       showToast('Fact-checked scripts ready');
     } catch (err) {
       setErrorMsg(err?.message || 'Failed to research & generate script.');
@@ -1329,6 +1336,9 @@ export default function App() {
                     <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">
                       2. Voiceover Narration (TTS Ready)
                     </span>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 tabular-nums">
+                      {voiceoverNarration.trim().split(/\s+/).filter(Boolean).length} words · ~{Math.round((voiceoverNarration.trim().split(/\s+/).filter(Boolean).length / 140) * 60)}s
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -1366,6 +1376,27 @@ export default function App() {
                   onChange={(e) => setVoiceoverNarration(e.target.value)}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm leading-relaxed text-slate-800 focus:outline-none focus:bg-white focus:border-indigo-500 resize-y"
                 />
+              </section>
+            )}
+
+            {(youtubeTitles.length > 0 || thumbnailText) && (
+              <section className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-2.5">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">
+                  3. Titles &amp; Thumbnail Hook
+                </span>
+                {thumbnailText && (
+                  <div className="text-xs text-slate-700">
+                    <span className="font-semibold text-slate-900">Thumbnail Text:</span>{' '}
+                    <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-bold">{thumbnailText}</span>
+                  </div>
+                )}
+                {youtubeTitles.length > 0 && (
+                  <ul className="space-y-1 text-xs text-slate-700 list-disc pl-4">
+                    {youtubeTitles.map((t, idx) => (
+                      <li key={idx}>{t}</li>
+                    ))}
+                  </ul>
+                )}
               </section>
             )}
           </div>
