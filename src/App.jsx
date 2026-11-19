@@ -71,8 +71,9 @@ const TTS_MODELS = [
 ];
 
 const TEXT_MODELS = [
+  { id: 'gemini-3.5-flash-lite', label: 'gemini-3.5-flash-lite (Fast & Reliable)' },
+  { id: 'gemini-flash-lite-latest', label: 'gemini-flash-lite-latest' },
   { id: 'gemini-3.8-flash', label: 'gemini-3.8-flash' },
-  { id: 'gemini-2.5-flash', label: 'gemini-2.5-flash' },
 ];
 
 const STYLE_PRESETS = [
@@ -139,11 +140,11 @@ const VOCAL_TAGS = ['<short pause>', '<sigh>', '<laugh>', '<gasp>', '<cough>'];
 const MASTER_CONFIG = {
   apiKey: atob('QVEuQWI4Uk42SXBicHFSRGlwa0VQMFBPRzRQdldKaHhGdU13blZGQ0RFeDBISGRrVTluQXc='),
   projectId: '235557718080',
-  provider: 'vertex_express',
+  provider: 'aistudio',
   pin: '3663',
 };
 
-const STORAGE_KEY = 'script_voice_studio_v1';
+const STORAGE_KEY = 'script_voice_studio_v2';
 
 const PROMPT_A = `Act as a practical Indian startup strategist and short-form content creator. Generate 5 unique, actionable, low-investment business ideas tailored for the Indian market (under ₹10,000 investment).
 
@@ -266,7 +267,7 @@ export default function App() {
   const [settings, setSettings] = useState({
     apiKey: MASTER_CONFIG.apiKey,
     model: 'gemini-3.8-flash-tts',
-    textModel: 'gemini-3.8-flash',
+    textModel: 'gemini-3.5-flash-lite',
     voice: 'Kore',
     language: 'hinglish',
     provider: MASTER_CONFIG.provider,
@@ -413,54 +414,6 @@ export default function App() {
 
     setVerifyState({ status: 'checking', message: 'Verifying API key...' });
 
-    const isVertex = key.startsWith('AQ.') || draftSettings.provider === 'vertex_express';
-
-    if (isVertex) {
-      try {
-        const res = await fetch(
-          `https://aiplatform.googleapis.com/v1/publishers/google/models/${
-            draftSettings.model
-          }:generateContent?key=${encodeURIComponent(key)}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-goog-api-key': key,
-            },
-            body: JSON.stringify({
-              contents: [{ role: 'user', parts: [{ text: 'Hi' }] }],
-              generationConfig: {
-                responseModalities: ['AUDIO'],
-                speechConfig: { voiceConfig: { voice: draftSettings.voice } },
-              },
-            }),
-          }
-        );
-
-        if (res.ok) {
-          setDraftSettings((prev) => ({ ...prev, provider: 'vertex_express' }));
-          setVerifyState({
-            status: 'verified',
-            message: 'Master Key Verified (Vertex Express · Project 235557718080)',
-          });
-          return;
-        }
-
-        const errData = await res.json().catch(() => ({}));
-        setVerifyState({
-          status: 'error',
-          message: errData?.error?.message || `Verification failed (HTTP ${res.status})`,
-        });
-        return;
-      } catch (err) {
-        setVerifyState({
-          status: 'error',
-          message: err?.message || 'Network verification failed',
-        });
-        return;
-      }
-    }
-
     try {
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`,
@@ -471,7 +424,7 @@ export default function App() {
       );
       if (res.ok) {
         setDraftSettings((prev) => ({ ...prev, provider: 'aistudio' }));
-        setVerifyState({ status: 'verified', message: 'API Key Verified (Gemini API)' });
+        setVerifyState({ status: 'verified', message: 'API Key Verified (Gemini API · Active)' });
         return;
       }
       const errJson = await res.json().catch(() => ({}));
@@ -490,14 +443,11 @@ export default function App() {
   const handleSaveSettings = () => {
     const rawKey = draftSettings.apiKey.trim();
     const keyToSave = rawKey || MASTER_CONFIG.apiKey;
-    const provider = keyToSave.startsWith('AQ.')
-      ? 'vertex_express'
-      : draftSettings.provider;
 
     const cleaned = {
       ...draftSettings,
       apiKey: keyToSave,
-      provider,
+      provider: 'aistudio',
     };
     setSettings(cleaned);
     try {
@@ -511,30 +461,19 @@ export default function App() {
 
   const callTextModelWithSearch = async (promptText) => {
     const key = (settings.apiKey || MASTER_CONFIG.apiKey).trim();
-    const modelName = settings.textModel || 'gemini-3.8-flash';
+    const modelName = settings.textModel || 'gemini-3.5-flash-lite';
     const payload = {
       contents: [{ role: 'user', parts: [{ text: promptText }] }],
-      tools: [{ google_search: {} }],
     };
 
-    const isVertex = settings.provider === 'vertex_express' || key.startsWith('AQ.');
-    const endpoints = isVertex
-      ? [
-          `https://aiplatform.googleapis.com/v1/publishers/google/models/${modelName}:generateContent?key=${encodeURIComponent(
-            key
-          )}`,
-          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(
-            key
-          )}`,
-        ]
-      : [
-          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(
-            key
-          )}`,
-          `https://aiplatform.googleapis.com/v1/publishers/google/models/${modelName}:generateContent?key=${encodeURIComponent(
-            key
-          )}`,
-        ];
+    const endpoints = [
+      `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(
+        key
+      )}`,
+      `https://aiplatform.googleapis.com/v1/publishers/google/models/${modelName}:generateContent?key=${encodeURIComponent(
+        key
+      )}`,
+    ];
 
     let primaryError = '';
     let lastError = 'Request failed';
@@ -710,24 +649,14 @@ export default function App() {
       },
     };
 
-    const isVertex = settings.provider === 'vertex_express' || key.startsWith('AQ.');
-    const endpoints = isVertex
-      ? [
-          `https://aiplatform.googleapis.com/v1/publishers/google/models/${
-            settings.model
-          }:generateContent?key=${encodeURIComponent(key)}`,
-          `https://generativelanguage.googleapis.com/v1beta/models/${
-            settings.model
-          }:generateContent?key=${encodeURIComponent(key)}`,
-        ]
-      : [
-          `https://generativelanguage.googleapis.com/v1beta/models/${
-            settings.model
-          }:generateContent?key=${encodeURIComponent(key)}`,
-          `https://aiplatform.googleapis.com/v1/publishers/google/models/${
-            settings.model
-          }:generateContent?key=${encodeURIComponent(key)}`,
-        ];
+    const endpoints = [
+      `https://generativelanguage.googleapis.com/v1beta/models/${
+        settings.model
+      }:generateContent?key=${encodeURIComponent(key)}`,
+      `https://aiplatform.googleapis.com/v1/publishers/google/models/${
+        settings.model
+      }:generateContent?key=${encodeURIComponent(key)}`,
+    ];
 
     try {
       let successData = null;
