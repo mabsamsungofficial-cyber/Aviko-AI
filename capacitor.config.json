@@ -1,6 +1,6 @@
 {
   "appId": "com.scriptvoice.studio",
-  "appName": "ScriptVoice",
+  "appName": "Aviko AI v2",
   "webDir": "dist",
   "android": {
     "allowMixedContent": false,

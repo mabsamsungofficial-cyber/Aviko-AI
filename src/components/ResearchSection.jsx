@@ -1,0 +1,458 @@
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  Search,
+  X,
+  Globe,
+  Sparkles,
+  FileText,
+  Smartphone,
+  Monitor,
+  ShieldCheck,
+  ExternalLink,
+  Video,
+  Volume2,
+  Copy,
+  Check,
+  ArrowRight,
+  Loader2,
+  ChevronDown,
+} from 'lucide-react';
+import { FORMAT_OPTIONS, LANGUAGE_OPTIONS } from '../constants/options';
+
+export default function ResearchSection({
+  topicInput,
+  setTopicInput,
+  videoFormat,
+  setVideoFormat,
+  language,
+  setLanguage,
+  ideas,
+  selectedIdeaId,
+  setSelectedIdeaId,
+  isLoadingIdeas,
+  isLoadingStory,
+  onGenerateIdeas,
+  onDirectTopicScript,
+  onGenerateStoryScript,
+  verifiedFacts,
+  searchSources,
+  searchGrounded,
+  geminiVideoScript,
+  setGeminiVideoScript,
+  voiceoverNarration,
+  setVoiceoverNarration,
+  youtubeTitles,
+  thumbnailText,
+  copiedVideoScript,
+  copiedNarration,
+  onCopyText,
+  onSendToVoiceover,
+}) {
+  const [isLangOpen, setIsLangOpen] = useState(false);
+  const langDropdownRef = useRef(null);
+
+  const activeLangObj =
+    LANGUAGE_OPTIONS.find((l) => l.id === language) || LANGUAGE_OPTIONS[0];
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (langDropdownRef.current && !langDropdownRef.current.contains(event.target)) {
+        setIsLangOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
+
+  return (
+    <div className="space-y-4">
+      {/* Search & Topic Research Box */}
+      <section className="bg-white border border-slate-200/80 rounded-[22px] p-4 shadow-level-2 space-y-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
+          <span className="text-xs font-bold text-slate-800 tracking-tight uppercase">
+            Topic Research &amp; Trends
+          </span>
+
+          {/* Format Selector: 9:16 vs 16:9 - Segmented Pill Control */}
+          <div className="inline-flex items-center bg-slate-200/60 border border-slate-200/70 rounded-full p-1">
+            {FORMAT_OPTIONS.map((fmt) => {
+              const active = videoFormat === fmt.id;
+              return (
+                <button
+                  key={fmt.id}
+                  type="button"
+                  onClick={() => setVideoFormat(fmt.id)}
+                  className={`flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold transition ${
+                    active
+                      ? 'bg-white text-slate-900 shadow-level-1'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {fmt.id === '9:16' ? (
+                    <Smartphone className="w-3.5 h-3.5" />
+                  ) : (
+                    <Monitor className="w-3.5 h-3.5" />
+                  )}
+                  <span>{fmt.id}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Topic Input Box */}
+        <div className="space-y-3">
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-4 top-3.5" />
+            <input
+              type="text"
+              value={topicInput}
+              onChange={(e) => setTopicInput(e.target.value)}
+              placeholder="Enter topic (e.g. Zepto dark stores) or leave blank for trends..."
+              className="w-full h-11 bg-slate-50/90 border border-slate-200/80 rounded-full pl-10 pr-10 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus-ring-mint transition shadow-level-1 font-medium"
+            />
+            {topicInput && (
+              <button
+                type="button"
+                onClick={() => setTopicInput('')}
+                className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600"
+                title="Clear topic"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Script Language Custom Dropdown */}
+          <div className="relative" ref={langDropdownRef}>
+            <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-1.5 truncate flex items-center gap-1.5">
+              <Globe className="w-3 h-3 text-emerald-600 shrink-0" />
+              <span>Script Language</span>
+            </label>
+
+            <button
+              type="button"
+              onClick={() => setIsLangOpen(!isLangOpen)}
+              className="w-full sm:w-72 h-10 px-3.5 rounded-xl bg-slate-50/90 hover:bg-slate-100/90 border border-slate-200/80 flex items-center justify-between text-xs font-semibold text-slate-800 shadow-level-1 transition active:scale-[0.99] focus:outline-none focus:border-emerald-500"
+            >
+              <div className="flex items-center gap-1.5 truncate">
+                <span className="font-bold text-slate-900 truncate">{activeLangObj.label}</span>
+                <span className="text-[10px] text-slate-400 font-normal truncate">
+                  ({activeLangObj.accent})
+                </span>
+              </div>
+
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 shrink-0 ml-1.5 ${
+                  isLangOpen ? 'rotate-180 text-emerald-600' : ''
+                }`}
+              />
+            </button>
+
+            {/* Language Popover Menu */}
+            {isLangOpen && (
+              <div className="absolute top-full left-0 w-72 mt-2 z-40 bg-white border border-slate-200/90 rounded-2xl shadow-level-3 p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100">
+                {LANGUAGE_OPTIONS.map((lang) => {
+                  const isSelected = language === lang.id;
+                  return (
+                    <button
+                      key={lang.id}
+                      type="button"
+                      onClick={() => {
+                        setLanguage(lang.id);
+                        setIsLangOpen(false);
+                      }}
+                      className={`w-full h-9 px-3 rounded-xl text-left flex items-center justify-between transition ${
+                        isSelected
+                          ? 'bg-emerald-50 text-emerald-950 font-bold border border-emerald-100'
+                          : 'hover:bg-slate-50 text-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-xs font-bold text-slate-900">{lang.label}</span>
+                        <span className="text-[10px] text-slate-400 font-normal truncate">
+                          ({lang.accent})
+                        </span>
+                      </div>
+
+                      {isSelected && (
+                        <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5] shrink-0" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={onGenerateIdeas}
+              disabled={isLoadingIdeas || isLoadingStory}
+              className="h-9 px-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 disabled:opacity-60 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-tactile-primary border-t border-white/30 active:scale-95"
+            >
+              {isLoadingIdeas ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Searching Trends...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Generate Ideas</span>
+                </>
+              )}
+            </button>
+
+            {topicInput.trim() && (
+              <button
+                type="button"
+                onClick={onDirectTopicScript}
+                disabled={isLoadingStory || isLoadingIdeas}
+                className="h-9 px-4 rounded-full bg-slate-900 hover:bg-slate-800 disabled:opacity-60 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-tactile-dark active:scale-95"
+              >
+                {isLoadingStory ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Writing...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Write Script</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Ideas List */}
+        {ideas.length > 0 && (
+          <div className="space-y-2.5 pt-2 border-t border-slate-100">
+            <div className="grid grid-cols-1 gap-2">
+              {ideas.map((idea) => {
+                const isSelected = idea.id === selectedIdeaId;
+                return (
+                  <button
+                    key={idea.id}
+                    type="button"
+                    onClick={() => setSelectedIdeaId(idea.id)}
+                    className={`text-left p-3.5 rounded-2xl border transition active:scale-[0.99] ${
+                      isSelected
+                        ? 'bg-emerald-50/70 border-emerald-300 ring-1 ring-emerald-400/40 shadow-level-1'
+                        : 'bg-slate-50/70 border-slate-200/80 hover:border-slate-300 shadow-level-1'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-xs sm:text-sm font-bold text-slate-900">
+                        {idea.id}. {idea.title}
+                      </span>
+                      {isSelected && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold shrink-0 shadow-2xs">
+                          Selected
+                        </span>
+                      )}
+                    </div>
+                    {idea.trend_angle && (
+                      <p className="text-xs text-emerald-800 font-semibold mb-1">
+                        {idea.trend_angle}
+                      </p>
+                    )}
+                    <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                      <span className="font-bold text-slate-700">Mechanism:</span>{' '}
+                      {idea.core_process || idea.core_problem} ·{' '}
+                      <span className="font-bold text-slate-700">Hook:</span>{' '}
+                      {idea.fact_hook || idea.monetization}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex justify-end pt-1">
+              <button
+                type="button"
+                onClick={onGenerateStoryScript}
+                disabled={isLoadingStory || !selectedIdeaId}
+                className="h-9 px-4 rounded-full bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-tactile-dark active:scale-95"
+              >
+                {isLoadingStory ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Fact-Checking &amp; Writing...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Fact-Check &amp; Generate Script</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Verified Facts & Sources */}
+      {(verifiedFacts.length > 0 || searchSources.length > 0) && (
+        <section className="bg-emerald-50/60 border border-emerald-200/80 rounded-[22px] p-4 space-y-2 shadow-level-1">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              Verified Facts
+            </span>
+            {searchGrounded && (
+              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                Google Grounded
+              </span>
+            )}
+          </div>
+
+          {verifiedFacts.length > 0 && (
+            <ul className="space-y-1 text-xs text-emerald-950 list-disc pl-4 leading-relaxed font-medium">
+              {verifiedFacts.map((fact, idx) => (
+                <li key={idx}>{fact}</li>
+              ))}
+            </ul>
+          )}
+
+          {searchSources.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {searchSources.slice(0, 4).map((src, idx) => (
+                <a
+                  key={idx}
+                  href={src.uri}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border border-emerald-200 text-[10px] font-semibold text-emerald-800 hover:bg-emerald-100 transition max-w-[200px] truncate shadow-2xs"
+                >
+                  <ExternalLink className="w-2.5 h-2.5 shrink-0" />
+                  <span className="truncate">{src.title}</span>
+                </a>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Script Box 1: Gemini Video Script */}
+      {geminiVideoScript && (
+        <section className="bg-white border border-slate-200/80 rounded-[22px] p-4 shadow-level-2 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Video className="w-4 h-4 text-emerald-600" />
+              <span className="text-xs font-bold text-slate-800">
+                1. Gemini Video Script ({videoFormat})
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => onCopyText(geminiVideoScript, 'video')}
+              className="h-8 px-3 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-1 transition shadow-level-1 active:scale-95"
+            >
+              {copiedVideoScript ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Copied</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy Script</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <textarea
+            rows={7}
+            value={geminiVideoScript}
+            onChange={(e) => setGeminiVideoScript(e.target.value)}
+            className="w-full bg-slate-50/80 border border-slate-200/80 rounded-2xl p-3.5 text-xs font-mono leading-relaxed text-slate-800 focus:outline-none focus:bg-white focus-ring-mint resize-none shadow-level-1"
+          />
+        </section>
+      )}
+
+      {/* Script Box 2: Clean Voiceover Narration */}
+      {voiceoverNarration && (
+        <section className="bg-white border border-slate-200/80 rounded-[22px] p-4 shadow-level-2 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Volume2 className="w-4 h-4 text-emerald-600" />
+              <span className="text-xs font-bold text-slate-800">
+                2. Spoken Narration
+              </span>
+              <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200/80 tabular-nums">
+                {voiceoverNarration.trim().split(/\s+/).filter(Boolean).length} words · ~{Math.round((voiceoverNarration.trim().split(/\s+/).filter(Boolean).length / 140) * 60)}s
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onCopyText(voiceoverNarration, 'narration')}
+                className="h-8 px-3 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-1 transition shadow-level-1 active:scale-95"
+              >
+                {copiedNarration ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Copied</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={onSendToVoiceover}
+                className="h-8.5 px-3.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-tactile-primary active:scale-95 border-t border-white/30"
+              >
+                <span>Send to Voiceover</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+
+          <textarea
+            rows={5}
+            value={voiceoverNarration}
+            onChange={(e) => setVoiceoverNarration(e.target.value)}
+            className="w-full bg-slate-50/80 border border-slate-200/80 rounded-2xl p-3.5 text-xs sm:text-sm leading-relaxed text-slate-800 focus:outline-none focus:bg-white focus-ring-mint resize-none shadow-level-1 font-normal"
+          />
+        </section>
+      )}
+
+      {/* Titles & Thumbnail Hook */}
+      {(youtubeTitles.length > 0 || thumbnailText) && (
+        <section className="bg-white border border-slate-200/80 rounded-[22px] p-4 shadow-level-2 space-y-2.5">
+          <span className="text-xs font-bold text-slate-600 uppercase tracking-wide block">
+            3. Titles &amp; Thumbnail Hook
+          </span>
+          {thumbnailText && (
+            <div className="text-xs text-slate-700">
+              <span className="font-bold text-slate-900">Hook:</span>{' '}
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold border border-amber-200">{thumbnailText}</span>
+            </div>
+          )}
+          {youtubeTitles.length > 0 && (
+            <ul className="space-y-1 text-xs text-slate-700 list-disc pl-4 font-medium">
+              {youtubeTitles.map((t, idx) => (
+                <li key={idx}>{t}</li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+    </div>
+  );
+}

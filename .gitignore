@@ -4,5 +4,11 @@ android/.gradle
 android/build
 android/app/build
 android/local.properties
+android/.idea
 *.keystore
 *.jks
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.local
