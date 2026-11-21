@@ -155,7 +155,7 @@ export default function ResearchSection({
 
             {/* Language Popover Menu */}
             {isLangOpen && (
-              <div className="absolute top-full left-0 w-72 mt-1.5 z-40 bg-white border border-slate-200 rounded-2xl shadow-level-3 p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute top-full left-0 w-full max-w-[280px] sm:w-72 mt-1.5 z-40 bg-white border border-slate-200 rounded-2xl shadow-level-3 p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100">
                 {LANGUAGE_OPTIONS.map((lang) => {
                   const isSelected = language === lang.id;
                   return (

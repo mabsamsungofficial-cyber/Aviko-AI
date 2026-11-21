@@ -11,7 +11,6 @@ import {
   EyeOff,
   Loader2,
   RefreshCw,
-  ChevronDown,
   CheckCircle2,
   Volume2,
   BookOpen,
@@ -34,12 +33,6 @@ export default function SettingsModal({
   const [pinError, setPinError] = useState('');
   const [showKey, setShowKey] = useState(false);
 
-  // Custom Dropdowns State
-  const [isTtsOpen, setIsTtsOpen] = useState(false);
-  const [isTextOpen, setIsTextOpen] = useState(false);
-  const ttsDropdownRef = useRef(null);
-  const textDropdownRef = useRef(null);
-
   const [verifyState, setVerifyState] = useState({
     status: 'idle',
     message: '',
@@ -53,28 +46,8 @@ export default function SettingsModal({
       setPinInput('');
       setPinError('');
       setVerifyState({ status: 'idle', message: '' });
-      setIsTtsOpen(false);
-      setIsTextOpen(false);
     }
   }, [isOpen, settings]);
-
-  // Click outside to close custom dropdowns
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (ttsDropdownRef.current && !ttsDropdownRef.current.contains(event.target)) {
-        setIsTtsOpen(false);
-      }
-      if (textDropdownRef.current && !textDropdownRef.current.contains(event.target)) {
-        setIsTextOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('touchstart', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
-    };
-  }, []);
 
   const isMasterActive =
     !!draftSettings.apiKey && draftSettings.apiKey === SECURITY_CONFIG.masterKey;
@@ -189,7 +162,6 @@ export default function SettingsModal({
     const updated = { ...draftSettings, model: modelId };
     setDraftSettings(updated);
     onSaveSettings(updated);
-    setIsTtsOpen(false);
     const chosen = TTS_MODELS.find((m) => m.id === modelId);
     onToast?.(`TTS: ${chosen?.name || modelId}`);
   };
@@ -198,17 +170,11 @@ export default function SettingsModal({
     const updated = { ...draftSettings, textModel: modelId };
     setDraftSettings(updated);
     onSaveSettings(updated);
-    setIsTextOpen(false);
     const chosen = TEXT_MODELS.find((m) => m.id === modelId);
     onToast?.(`Script Model: ${chosen?.name || modelId}`);
   };
 
   if (!isOpen) return null;
-
-  const activeTtsObj =
-    TTS_MODELS.find((m) => m.id === draftSettings.model) || TTS_MODELS[0];
-  const activeTextObj =
-    TEXT_MODELS.find((m) => m.id === draftSettings.textModel) || TEXT_MODELS[0];
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150">
@@ -427,174 +393,114 @@ export default function SettingsModal({
             </div>
           </div>
 
-          {/* 3. AI ENGINE MODELS (SIDE-BY-SIDE 2-COLUMN GRID) */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="font-subtitle text-slate-900 flex items-center gap-1.5">
-                <Cpu className="w-3.5 h-3.5 text-slate-600" />
-                <span>AI Models</span>
-              </span>
+          {/* 3. AI MODELS (RESPONSIVE SELECTION TILES - ZERO OVERFLOW) */}
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-4">
+            <span className="font-subtitle text-slate-900 flex items-center gap-1.5">
+              <Cpu className="w-3.5 h-3.5 text-slate-600" />
+              <span>AI Models</span>
+            </span>
+
+            {/* Voice Model (TTS) */}
+            <div className="space-y-2">
+              <label className="font-subtitle text-xs text-slate-700 flex items-center gap-1.5">
+                <Volume2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                <span>Voice Model (TTS)</span>
+              </label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {TTS_MODELS.map((m) => {
+                  const isSelected = draftSettings.model === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => handleSelectTtsModel(m.id)}
+                      className={`p-3 rounded-2xl border text-left transition active:scale-[0.99] flex items-center justify-between cursor-pointer ${
+                        isSelected
+                          ? 'bg-slate-50 border-slate-900 ring-1 ring-slate-900 shadow-sm'
+                          : 'bg-white hover:bg-slate-50/70 border-slate-200'
+                      }`}
+                    >
+                      <div className="min-w-0 pr-2">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-subtitle text-xs text-slate-900 font-semibold truncate">
+                            {m.name}
+                          </span>
+                          {m.badge && (
+                            <span className="font-caption text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium border border-slate-200 shrink-0">
+                              {m.badge}
+                            </span>
+                          )}
+                        </div>
+                        <p className="font-caption text-slate-500 text-[11px] mt-0.5">
+                          {m.desc}
+                        </p>
+                      </div>
+
+                      <div
+                        className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition ${
+                          isSelected
+                            ? 'bg-[#0F172A] text-white shadow-sm'
+                            : 'border border-slate-300'
+                        }`}
+                      >
+                        {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              {/* TTS Model Dropdown */}
-              <div className="relative" ref={ttsDropdownRef}>
-                <label className="font-subtitle text-slate-700 mb-1.5 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 truncate">
-                    <Volume2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                    <span>TTS Voice</span>
-                  </span>
-                  <span className="font-caption font-semibold px-2 py-0.2 rounded-full bg-slate-100 text-slate-600 shrink-0">
-                    {activeTtsObj.badge || 'Voice'}
-                  </span>
-                </label>
+            {/* Script & Story Model */}
+            <div className="space-y-2 pt-2 border-t border-slate-100">
+              <label className="font-subtitle text-xs text-slate-700 flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                <span>Script Model</span>
+              </label>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsTtsOpen(!isTtsOpen);
-                    setIsTextOpen(false);
-                  }}
-                  className={`w-full h-11 px-3 rounded-xl bg-white hover:bg-slate-50 border flex items-center justify-between text-left transition shadow-sm active:scale-[0.99] outline-none ${
-                    isTtsOpen
-                      ? 'border-slate-800 ring-1 ring-slate-800'
-                      : 'border-slate-200'
-                  }`}
-                >
-                  <div className="min-w-0 pr-2">
-                    <p className="font-subtitle text-xs text-slate-900 truncate">
-                      {activeTtsObj.name || activeTtsObj.label}
-                    </p>
-                    <p className="font-caption text-slate-400 truncate">
-                      {activeTtsObj.id}
-                    </p>
-                  </div>
-                  <ChevronDown
-                    className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
-                      isTtsOpen ? 'rotate-180 text-slate-900' : ''
-                    }`}
-                  />
-                </button>
-
-                {/* TTS Popover */}
-                {isTtsOpen && (
-                  <div className="absolute top-full left-0 right-0 sm:left-0 sm:right-auto sm:w-72 mt-1.5 z-50 bg-white border border-slate-200 rounded-2xl shadow-level-3 p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100">
-                    {TTS_MODELS.map((m) => {
-                      const isSelected = draftSettings.model === m.id;
-                      return (
-                        <button
-                          key={m.id}
-                          type="button"
-                          onClick={() => handleSelectTtsModel(m.id)}
-                          className={`w-full p-2.5 rounded-xl text-left flex items-start justify-between transition ${
-                            isSelected
-                              ? 'bg-slate-100 text-slate-900 font-semibold'
-                              : 'hover:bg-slate-50 text-slate-700'
-                          }`}
-                        >
-                          <div className="min-w-0 pr-2">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-subtitle text-xs text-slate-900 truncate">
-                                {m.name || m.label}
-                              </span>
-                              {m.badge && (
-                                <span className="font-caption text-[10px] px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-700 shrink-0">
-                                  {m.badge}
-                                </span>
-                              )}
-                            </div>
-                            <p className="font-caption text-slate-500 line-clamp-1 mt-0.5">
-                              {m.desc || m.id}
-                            </p>
-                          </div>
-                          {isSelected && (
-                            <Check className="w-4 h-4 text-slate-900 stroke-[2.5] shrink-0 mt-0.5" />
+              <div className="space-y-2">
+                {TEXT_MODELS.map((m) => {
+                  const isSelected = draftSettings.textModel === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => handleSelectTextModel(m.id)}
+                      className={`w-full p-3 rounded-2xl border text-left transition active:scale-[0.99] flex items-center justify-between cursor-pointer ${
+                        isSelected
+                          ? 'bg-slate-50 border-slate-900 ring-1 ring-slate-900 shadow-sm'
+                          : 'bg-white hover:bg-slate-50/70 border-slate-200'
+                      }`}
+                    >
+                      <div className="min-w-0 pr-2">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-subtitle text-xs text-slate-900 font-semibold truncate">
+                            {m.name}
+                          </span>
+                          {m.badge && (
+                            <span className="font-caption text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium border border-slate-200 shrink-0">
+                              {m.badge}
+                            </span>
                           )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+                        </div>
+                        <p className="font-caption text-slate-500 text-[11px] mt-0.5">
+                          {m.desc}
+                        </p>
+                      </div>
 
-              {/* Story Model Dropdown */}
-              <div className="relative" ref={textDropdownRef}>
-                <label className="font-subtitle text-slate-700 mb-1.5 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 truncate">
-                    <BookOpen className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                    <span>Story Model</span>
-                  </span>
-                  <span className="font-caption font-semibold px-2 py-0.2 rounded-full bg-slate-100 text-slate-600 shrink-0">
-                    {activeTextObj.badge || 'Script'}
-                  </span>
-                </label>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsTextOpen(!isTextOpen);
-                    setIsTtsOpen(false);
-                  }}
-                  className={`w-full h-11 px-3 rounded-xl bg-white hover:bg-slate-50 border flex items-center justify-between text-left transition shadow-sm active:scale-[0.99] outline-none ${
-                    isTextOpen
-                      ? 'border-slate-800 ring-1 ring-slate-800'
-                      : 'border-slate-200'
-                  }`}
-                >
-                  <div className="min-w-0 pr-2">
-                    <p className="font-subtitle text-xs text-slate-900 truncate">
-                      {activeTextObj.name || activeTextObj.label}
-                    </p>
-                    <p className="font-caption text-slate-400 truncate">
-                      {activeTextObj.id}
-                    </p>
-                  </div>
-                  <ChevronDown
-                    className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
-                      isTextOpen ? 'rotate-180 text-slate-900' : ''
-                    }`}
-                  />
-                </button>
-
-                {/* Story Popover */}
-                {isTextOpen && (
-                  <div className="absolute top-full right-0 left-0 sm:left-auto sm:right-0 sm:w-72 mt-1.5 z-50 bg-white border border-slate-200 rounded-2xl shadow-level-3 p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100">
-                    {TEXT_MODELS.map((m) => {
-                      const isSelected = draftSettings.textModel === m.id;
-                      return (
-                        <button
-                          key={m.id}
-                          type="button"
-                          onClick={() => handleSelectTextModel(m.id)}
-                          className={`w-full p-2.5 rounded-xl text-left flex items-start justify-between transition ${
-                            isSelected
-                              ? 'bg-slate-100 text-slate-900 font-semibold'
-                              : 'hover:bg-slate-50 text-slate-700'
-                          }`}
-                        >
-                          <div className="min-w-0 pr-2">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-subtitle text-xs text-slate-900 truncate">
-                                {m.name || m.label}
-                              </span>
-                              {m.badge && (
-                                <span className="font-caption text-[10px] px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-700 shrink-0">
-                                  {m.badge}
-                                </span>
-                              )}
-                            </div>
-                            <p className="font-caption text-slate-500 line-clamp-1 mt-0.5">
-                              {m.desc || m.id}
-                            </p>
-                          </div>
-                          {isSelected && (
-                            <Check className="w-4 h-4 text-slate-900 stroke-[2.5] shrink-0 mt-0.5" />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                      <div
+                        className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition ${
+                          isSelected
+                            ? 'bg-[#0F172A] text-white shadow-sm'
+                            : 'border border-slate-300'
+                        }`}
+                      >
+                        {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>

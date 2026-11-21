@@ -180,7 +180,7 @@ export default function VoiceoverSection({
               }}
               className="w-full h-10 px-3.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 focus:border-slate-800 flex items-center justify-between font-body text-slate-900 shadow-sm transition active:scale-[0.99] outline-none"
             >
-              <div className="flex items-center gap-1.5 truncate">
+              <div className="flex items-center gap-1.5 truncate min-w-0">
                 <span className="font-semibold text-slate-900 truncate">{activeLangObj.label}</span>
                 <span className="font-caption text-slate-400 truncate hidden sm:inline">
                   ({activeLangObj.accent})
@@ -196,7 +196,7 @@ export default function VoiceoverSection({
 
             {/* Language Popover Menu */}
             {isLangOpen && (
-              <div className="absolute top-full left-0 w-64 sm:w-72 mt-1.5 z-40 bg-white border border-slate-200 rounded-2xl shadow-level-3 p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute top-full left-0 w-full max-w-[280px] sm:w-72 mt-1.5 z-40 bg-white border border-slate-200 rounded-2xl shadow-level-3 p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100">
                 {LANGUAGE_OPTIONS.map((lang) => {
                   const isSelected = language === lang.id;
                   return (
@@ -258,7 +258,7 @@ export default function VoiceoverSection({
 
             {/* Delivery Mood Popover Menu */}
             {isMoodOpen && (
-              <div className="absolute top-full right-0 w-64 sm:w-72 mt-1.5 z-40 bg-white border border-slate-200 rounded-2xl shadow-level-3 p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute top-full right-0 w-full max-w-[280px] sm:w-72 mt-1.5 z-40 bg-white border border-slate-200 rounded-2xl shadow-level-3 p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100">
                 {STYLE_PRESETS.map((preset) => {
                   const isSelected = style === preset.value;
                   return (
