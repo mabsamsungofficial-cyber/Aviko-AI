@@ -267,7 +267,7 @@ export default function App() {
     const key = (settings.apiKey || '').trim();
     if (!key) {
       setIsSettingsOpen(true);
-      setErrorMsg('API Key required. Enter your key in Settings or enter the 6-Digit PIN.');
+      setErrorMsg('API Key required. Configure in Settings.');
       throw new Error('API Key missing. Configure in Settings.');
     }
     const modelName = settings.textModel || 'gemini-3.5-flash-lite';
@@ -464,12 +464,12 @@ export default function App() {
     const key = (settings.apiKey || '').trim();
     if (!key) {
       setIsSettingsOpen(true);
-      setErrorMsg('API Key required. Enter your key in Settings or enter the 6-Digit PIN.');
+      setErrorMsg('API Key required. Configure in Settings.');
       return;
     }
 
     if (!script.trim()) {
-      setErrorMsg('Script is empty. Please enter narration text.');
+      setErrorMsg('Script is empty.');
       return;
     }
 
@@ -681,7 +681,7 @@ export default function App() {
               }`}
             >
               <BookOpen className="w-3.5 h-3.5" />
-              <span>Research &amp; Script</span>
+              <span>Scripting</span>
             </button>
             <button
               type="button"
@@ -693,7 +693,7 @@ export default function App() {
               }`}
             >
               <Volume2 className="w-3.5 h-3.5" />
-              <span>Voiceover Studio</span>
+              <span>Voiceover</span>
             </button>
           </nav>
         </div>
@@ -763,7 +763,7 @@ export default function App() {
             }`}
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Research &amp; Script</span>
+            <span>Scripting</span>
           </button>
           <button
             type="button"
@@ -775,7 +775,7 @@ export default function App() {
             }`}
           >
             <Volume2 className="w-3.5 h-3.5" />
-            <span>Voiceover Studio</span>
+            <span>Voiceover</span>
           </button>
         </div>
       </div>

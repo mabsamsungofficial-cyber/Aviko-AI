@@ -87,7 +87,7 @@ export default function VoicePickerModal({
         {/* Static Header */}
         <div className="h-14 px-4 sm:px-6 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
           <div className="flex items-center gap-2">
-            <h2 className="font-h3 text-slate-900 tracking-tight">Studio Voices</h2>
+            <h2 className="font-h3 text-slate-900 tracking-tight">Voices</h2>
             <span className="font-caption text-slate-400 tabular-nums">
               ({filteredVoices.length})
             </span>
@@ -111,7 +111,7 @@ export default function VoicePickerModal({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by voice name or character..."
+              placeholder="Search..."
               className="w-full h-9 bg-white border border-slate-200 rounded-xl pl-9 pr-8 font-body text-xs text-slate-900 placeholder:text-slate-400 outline-none shadow-sm"
             />
             {searchQuery && (
@@ -303,7 +303,7 @@ export default function VoicePickerModal({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search voices, tones, or character tags..."
+                  placeholder="Search voices..."
                   className="w-full h-10 bg-white border border-slate-200 hover:border-slate-300 focus:border-slate-800 rounded-xl pl-9 pr-8 font-body text-xs text-slate-900 placeholder:text-slate-400 transition shadow-sm outline-none"
                 />
                 {searchQuery && (
@@ -436,8 +436,7 @@ export default function VoicePickerModal({
           >
             <div className="flex items-center justify-between">
               <span className="font-subtitle text-xs text-slate-900">
-                Assign Character Tag to{' '}
-                {PREBUILT_VOICES.find((v) => v.id === editingTagVoiceId)?.name}
+                Tag: {PREBUILT_VOICES.find((v) => v.id === editingTagVoiceId)?.name}
               </span>
               <button
                 type="button"
@@ -454,7 +453,7 @@ export default function VoicePickerModal({
                 autoFocus
                 value={customTagInput}
                 onChange={(e) => setCustomTagInput(e.target.value)}
-                placeholder="e.g. Host, Narrator, Expert, Hero..."
+                placeholder="Tag name..."
                 className="flex-1 h-9 bg-white border border-slate-300 focus:border-slate-800 rounded-xl px-3 font-body text-xs text-slate-900 outline-none shadow-sm"
               />
               <button
@@ -484,7 +483,7 @@ export default function VoicePickerModal({
         {/* Footer */}
         <div className="h-14 px-4 sm:px-6 border-t border-slate-100 bg-white flex items-center justify-between shrink-0">
           <div className="font-body text-xs text-slate-600 truncate mr-2">
-            Selected Voice:{' '}
+            <span className="text-slate-400">Voice: </span>
             <span className="font-semibold text-slate-900">
               {PREBUILT_VOICES.find((v) => v.id === selectedVoiceId)?.name || selectedVoiceId}
             </span>

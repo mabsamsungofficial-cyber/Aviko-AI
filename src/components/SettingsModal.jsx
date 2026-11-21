@@ -222,11 +222,8 @@ export default function SettingsModal({
             </div>
             <div>
               <h3 className="font-h3 text-slate-900 leading-tight">
-                API &amp; Model Settings
+                Settings
               </h3>
-              <p className="font-caption text-slate-400 leading-tight">
-                Manage Gemini API access &amp; AI models
-              </p>
             </div>
           </div>
 
@@ -240,7 +237,7 @@ export default function SettingsModal({
                 title="Master Key is Active. Click to lock."
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Master Active</span>
+                <span>Master</span>
               </button>
             ) : (
               <button
@@ -254,7 +251,7 @@ export default function SettingsModal({
                 title="Enter 6-digit Owner PIN to unlock Master Key"
               >
                 <Lock className="w-3.5 h-3.5" />
-                <span>Owner PIN</span>
+                <span>PIN</span>
               </button>
             )}
 
@@ -279,11 +276,8 @@ export default function SettingsModal({
                 <div>
                   <span className="font-subtitle text-slate-900 flex items-center gap-1.5">
                     <Lock className="w-3.5 h-3.5 text-slate-700" />
-                    <span>Owner Master Access</span>
+                    <span>PIN Access</span>
                   </span>
-                  <p className="font-caption text-slate-500 mt-0.5">
-                    Enter your 6-digit secret PIN to unlock the master engine
-                  </p>
                 </div>
                 <button
                   type="button"
@@ -333,7 +327,7 @@ export default function SettingsModal({
             <div className="flex items-center justify-between">
               <span className="font-subtitle text-slate-900 flex items-center gap-1.5">
                 <Key className="w-3.5 h-3.5 text-slate-600" />
-                <span>Gemini API Key</span>
+                <span>API Key</span>
               </span>
 
               <div className="flex items-center gap-2">
@@ -347,7 +341,7 @@ export default function SettingsModal({
                     <RefreshCw
                       className={`w-3 h-3 ${verifyState.status === 'checking' ? 'animate-spin' : ''}`}
                     />
-                    <span>{verifyState.status === 'checking' ? 'Testing...' : 'Test Key'}</span>
+                    <span>{verifyState.status === 'checking' ? 'Testing...' : 'Test'}</span>
                   </button>
                 )}
               </div>
@@ -367,7 +361,7 @@ export default function SettingsModal({
                   setDraftSettings(updated);
                   onSaveSettings(updated);
                 }}
-                placeholder="AIza... or paste your Gemini API key"
+                placeholder="Paste API Key..."
                 className="w-full h-10 bg-white border border-slate-200 hover:border-slate-300 focus:border-slate-800 rounded-xl pl-3.5 pr-10 font-mono text-xs text-slate-900 transition shadow-sm outline-none"
               />
               <button
@@ -408,16 +402,16 @@ export default function SettingsModal({
               {isMasterActive ? (
                 <span className="font-medium text-emerald-700 flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Master Key Active &amp; Ready</span>
+                  <span>Master Active</span>
                 </span>
               ) : draftSettings.apiKey ? (
                 <span className="text-slate-500 flex items-center gap-1">
                   <Check className="w-3.5 h-3.5 text-slate-700" />
-                  <span>Saved in local storage</span>
+                  <span>Saved</span>
                 </span>
               ) : (
                 <span className="text-slate-400">
-                  Enter key above or click Owner PIN
+                  Enter key or use PIN
                 </span>
               )}
 
@@ -427,7 +421,7 @@ export default function SettingsModal({
                   onClick={handleLockMasterKey}
                   className="font-semibold text-rose-600 hover:text-rose-700 transition"
                 >
-                  Clear Key
+                  Clear
                 </button>
               )}
             </div>
@@ -438,10 +432,7 @@ export default function SettingsModal({
             <div className="flex items-center justify-between">
               <span className="font-subtitle text-slate-900 flex items-center gap-1.5">
                 <Cpu className="w-3.5 h-3.5 text-slate-600" />
-                <span>AI Engine Models</span>
-              </span>
-              <span className="font-caption text-slate-400">
-                Instant sync
+                <span>AI Models</span>
               </span>
             </div>
 
@@ -488,9 +479,6 @@ export default function SettingsModal({
                 {/* TTS Popover */}
                 {isTtsOpen && (
                   <div className="absolute top-full left-0 right-0 sm:left-0 sm:right-auto sm:w-72 mt-1.5 z-50 bg-white border border-slate-200 rounded-2xl shadow-level-3 p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100">
-                    <div className="px-2.5 py-1 font-caption font-semibold uppercase tracking-wider text-slate-400">
-                      Select TTS Voice Model
-                    </div>
                     {TTS_MODELS.map((m) => {
                       const isSelected = draftSettings.model === m.id;
                       return (
@@ -571,9 +559,6 @@ export default function SettingsModal({
                 {/* Story Popover */}
                 {isTextOpen && (
                   <div className="absolute top-full right-0 left-0 sm:left-auto sm:right-0 sm:w-72 mt-1.5 z-50 bg-white border border-slate-200 rounded-2xl shadow-level-3 p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100">
-                    <div className="px-2.5 py-1 font-caption font-semibold uppercase tracking-wider text-slate-400">
-                      Select Script &amp; Story Model
-                    </div>
                     {TEXT_MODELS.map((m) => {
                       const isSelected = draftSettings.textModel === m.id;
                       return (
@@ -623,7 +608,7 @@ export default function SettingsModal({
             rel="noopener noreferrer"
             className="font-subtitle text-xs text-slate-500 hover:text-slate-900 flex items-center gap-1 transition"
           >
-            <span>Get Free Gemini Key</span>
+            <span>Get API Key</span>
             <ExternalLink className="w-3 h-3" />
           </a>
 

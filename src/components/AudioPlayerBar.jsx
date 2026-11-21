@@ -59,7 +59,7 @@ export default function AudioPlayerBar({
                 title="Download WAV"
               >
                 <Download className="w-4 h-4 text-slate-600" />
-                <span className="hidden sm:inline">Save WAV</span>
+                <span className="hidden sm:inline">Save</span>
               </button>
 
               <audio
@@ -85,12 +85,12 @@ export default function AudioPlayerBar({
               {isGenerating ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin text-slate-600" />
-                  <span>Generating New Audio...</span>
+                  <span>Generating...</span>
                 </>
               ) : (
                 <>
                   <RefreshCw className="w-4 h-4 text-slate-600" />
-                  <span>Regenerate Audio</span>
+                  <span>Regenerate</span>
                 </>
               )}
             </button>
@@ -106,7 +106,7 @@ export default function AudioPlayerBar({
             {isGenerating ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin text-slate-300" />
-                <span>Generating Studio Voiceover...</span>
+                <span>Generating...</span>
               </>
             ) : (
               <>

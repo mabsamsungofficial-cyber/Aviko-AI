@@ -132,7 +132,7 @@ export default function VoiceoverSection({
             </div>
 
             <p className="font-caption text-slate-500 truncate mt-0.5">
-              {activeVoice.tone} · Tap to change voice
+              {activeVoice.tone}
             </p>
           </div>
         </div>
@@ -165,11 +165,11 @@ export default function VoiceoverSection({
         {/* SIDE-BY-SIDE DROPDOWNS ROW */}
         <div className="grid grid-cols-2 gap-3">
           
-          {/* LEFT: LANGUAGE & ACCENT CUSTOM DROPDOWN */}
+          {/* LEFT: LANGUAGE CUSTOM DROPDOWN */}
           <div className="relative" ref={langDropdownRef}>
             <label className="block font-subtitle text-slate-700 mb-1.5 truncate flex items-center gap-1.5">
               <Globe className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-              <span>Language &amp; Accent</span>
+              <span>Language</span>
             </label>
 
             <button
@@ -230,11 +230,11 @@ export default function VoiceoverSection({
             )}
           </div>
 
-          {/* RIGHT: DELIVERY MOOD CUSTOM DROPDOWN */}
+          {/* RIGHT: MOOD CUSTOM DROPDOWN */}
           <div className="relative" ref={moodDropdownRef}>
             <label className="block font-subtitle text-slate-700 mb-1.5 truncate flex items-center gap-1.5">
               <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-              <span>Delivery Mood</span>
+              <span>Mood</span>
             </label>
 
             <button
@@ -290,24 +290,24 @@ export default function VoiceoverSection({
           </div>
         </div>
 
-        {/* FULL WIDTH CUSTOM STYLE INPUT (RIGHT BELOW BOTH DROPDOWNS INSIDE THE SAME CARD) */}
+        {/* FULL WIDTH CUSTOM STYLE INPUT */}
         <div>
           <input
             type="text"
             value={style}
             onChange={(e) => setStyle(e.target.value)}
-            placeholder="Custom delivery style prompt..."
+            placeholder="Custom style (optional)..."
             className="w-full h-10 bg-white border border-slate-200 hover:border-slate-300 focus:border-slate-800 focus:ring-1 focus:ring-slate-800 rounded-xl px-3.5 font-body text-slate-900 placeholder:text-slate-400 transition outline-none shadow-sm"
           />
         </div>
       </div>
 
-      {/* 3. SCRIPT NARRATION CARD */}
+      {/* 3. SCRIPT CARD */}
       <div className="bg-white border border-slate-200/90 rounded-2xl shadow-sm overflow-hidden focus-within:border-slate-800 focus-within:ring-1 focus-within:ring-slate-800 transition">
         {/* Header */}
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
           <span className="font-h3 text-slate-900">
-            Narration Script
+            Script
           </span>
 
           <div className="flex items-center gap-2">
@@ -320,7 +320,7 @@ export default function VoiceoverSection({
               onClick={() => setScript('')}
               disabled={!script}
               className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 disabled:opacity-30 transition"
-              title="Clear script"
+              title="Clear"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -329,7 +329,7 @@ export default function VoiceoverSection({
               type="button"
               onClick={() => setIsExpanded(true)}
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition active:scale-90"
-              title="Expand to full screen"
+              title="Expand"
             >
               <Maximize2 className="w-3.5 h-3.5" />
             </button>
@@ -342,28 +342,23 @@ export default function VoiceoverSection({
           rows={7}
           value={script}
           onChange={(e) => setScript(e.target.value)}
-          placeholder="Paste or type your script in Hindi, Hinglish, or English..."
+          placeholder="Write or paste script..."
           className="w-full p-4 font-body-medium text-slate-900 placeholder:text-slate-400 focus:outline-none resize-none bg-transparent"
         />
 
-        {/* Collapsible Emotion / Vocal Tags Accessory Bar */}
+        {/* Collapsible Emotion Tags Accessory Bar */}
         <div className="border-t border-slate-100 bg-slate-50/40">
           <button
             type="button"
             onClick={() => setIsVocalTagsOpen(!isVocalTagsOpen)}
             className="w-full px-4 py-2.5 flex items-center justify-between text-left hover:bg-slate-100/50 transition group"
           >
-            <div className="flex items-center gap-2">
-              <span className="font-subtitle text-slate-600 group-hover:text-slate-900 transition">
-                Vocal Emotion Tags
-              </span>
-              <span className="font-caption px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-500">
-                {VOCAL_TAGS.length} tags
-              </span>
-            </div>
+            <span className="font-subtitle text-slate-600 group-hover:text-slate-900 transition">
+              Emotions
+            </span>
 
             <div className="flex items-center gap-1 font-caption font-medium text-slate-700 bg-white px-3 py-1 rounded-full border border-slate-300 hover:bg-slate-50 transition shadow-sm">
-              <span>{isVocalTagsOpen ? 'Hide' : 'Add Emotions'}</span>
+              <span>{isVocalTagsOpen ? 'Hide' : 'Add'}</span>
               <ChevronDown
                 className={`w-3.5 h-3.5 transition-transform duration-200 ${
                   isVocalTagsOpen ? 'rotate-180 text-slate-900' : 'text-slate-400'
@@ -398,14 +393,9 @@ export default function VoiceoverSection({
           <div className="w-full max-w-4xl h-[92vh] bg-white border border-slate-200 rounded-3xl shadow-level-3 flex flex-col overflow-hidden">
             {/* Fullscreen Header */}
             <div className="px-5 py-3.5 border-b border-slate-100 bg-white flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2.5">
-                <span className="font-h3 text-slate-900">
-                  Narration Script
-                </span>
-                <span className="font-caption font-medium text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
-                  Full Screen Editor
-                </span>
-              </div>
+              <span className="font-h3 text-slate-900">
+                Script Editor
+              </span>
 
               <div className="flex items-center gap-2.5">
                 <span className="font-caption px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 tabular-nums">
@@ -439,7 +429,7 @@ export default function VoiceoverSection({
                 autoFocus
                 value={script}
                 onChange={(e) => setScript(e.target.value)}
-                placeholder="Paste or type your script in Hindi, Hinglish, or English..."
+                placeholder="Write or paste script..."
                 className="w-full h-full min-h-[300px] font-body-medium text-base sm:text-lg leading-relaxed text-slate-900 placeholder:text-slate-400 focus:outline-none resize-none bg-transparent"
               />
             </div>

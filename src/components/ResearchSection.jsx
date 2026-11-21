@@ -74,7 +74,7 @@ export default function ResearchSection({
       <section className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-3.5">
         <div className="flex flex-wrap items-center justify-between gap-2.5">
           <span className="font-subtitle text-slate-800 tracking-tight uppercase">
-            Topic Research &amp; Trends
+            Topic &amp; Research
           </span>
 
           {/* Format Selector: 9:16 vs 16:9 - Segmented Pill Control */}
@@ -112,7 +112,7 @@ export default function ResearchSection({
               type="text"
               value={topicInput}
               onChange={(e) => setTopicInput(e.target.value)}
-              placeholder="Enter topic (e.g. Zepto dark stores) or leave blank for trends..."
+              placeholder="Topic or keywords..."
               className="w-full h-10 bg-white border border-slate-200 hover:border-slate-300 focus:border-slate-800 focus:ring-1 focus:ring-slate-800 rounded-xl pl-9 pr-9 font-body text-slate-900 placeholder:text-slate-400 transition outline-none shadow-sm"
             />
             {topicInput && (
@@ -127,11 +127,11 @@ export default function ResearchSection({
             )}
           </div>
 
-          {/* Script Language Custom Dropdown */}
+          {/* Language Custom Dropdown */}
           <div className="relative" ref={langDropdownRef}>
             <label className="block font-subtitle text-slate-700 mb-1.5 truncate flex items-center gap-1.5">
               <Globe className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-              <span>Script Language</span>
+              <span>Language</span>
             </label>
 
             <button
@@ -200,12 +200,12 @@ export default function ResearchSection({
               {isLoadingIdeas ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-500" />
-                  <span>Searching Trends...</span>
+                  <span>Searching...</span>
                 </>
               ) : (
                 <>
                   <Sparkles className="w-3.5 h-3.5 text-slate-600" />
-                  <span>Generate Ideas</span>
+                  <span>Trends</span>
                 </>
               )}
             </button>
@@ -286,12 +286,12 @@ export default function ResearchSection({
                 {isLoadingStory ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-300" />
-                    <span>Fact-Checking &amp; Writing...</span>
+                    <span>Writing...</span>
                   </>
                 ) : (
                   <>
                     <FileText className="w-3.5 h-3.5 text-slate-200" />
-                    <span>Fact-Check &amp; Generate Script</span>
+                    <span>Generate Script</span>
                   </>
                 )}
               </button>
@@ -349,7 +349,7 @@ export default function ResearchSection({
             <div className="flex items-center gap-2">
               <Video className="w-4 h-4 text-slate-600" />
               <span className="font-subtitle text-slate-900">
-                1. Gemini Video Script ({videoFormat})
+                Video Script ({videoFormat})
               </span>
             </div>
             <button
@@ -365,7 +365,7 @@ export default function ResearchSection({
               ) : (
                 <>
                   <Copy className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Copy Script</span>
+                  <span>Copy</span>
                 </>
               )}
             </button>
@@ -387,7 +387,7 @@ export default function ResearchSection({
             <div className="flex items-center gap-2">
               <Volume2 className="w-4 h-4 text-slate-600" />
               <span className="font-subtitle text-slate-900">
-                2. Spoken Narration
+                Narration
               </span>
               <span className="font-caption px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 tabular-nums">
                 {voiceoverNarration.trim().split(/\s+/).filter(Boolean).length} words · ~{Math.round((voiceoverNarration.trim().split(/\s+/).filter(Boolean).length / 140) * 60)}s
@@ -417,7 +417,7 @@ export default function ResearchSection({
                 onClick={onSendToVoiceover}
                 className="h-8.5 px-4 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white font-subtitle text-xs flex items-center gap-1.5 transition shadow-sm active:scale-95"
               >
-                <span>Send to Voiceover</span>
+                <span>To Voiceover</span>
                 <ArrowRight className="w-3 h-3" />
               </button>
             </div>
@@ -436,7 +436,7 @@ export default function ResearchSection({
       {(youtubeTitles.length > 0 || thumbnailText) && (
         <section className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-2.5">
           <span className="font-subtitle text-slate-800 uppercase tracking-wide block">
-            3. Titles &amp; Thumbnail Hook
+            Titles &amp; Hooks
           </span>
           {thumbnailText && (
             <div className="font-body text-slate-700">
