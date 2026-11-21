@@ -1,12 +1,42 @@
 export const TTS_MODELS = [
-  { id: 'gemini-3.8-flash-tts', label: 'gemini-3.8-flash-tts' },
-  { id: 'gemini-3.8-flash-lite-tts', label: 'gemini-3.8-flash-lite-tts' },
+  {
+    id: 'gemini-3.8-flash-tts',
+    name: 'Gemini 2.5 Flash Voice',
+    label: 'Gemini 2.5 Flash Voice (Latest Exp)',
+    badge: 'Latest Exp',
+    desc: 'High-fidelity natural human expressiveness',
+  },
+  {
+    id: 'gemini-3.8-flash-lite-tts',
+    name: 'Gemini 2.5 Flash Lite Voice',
+    label: 'Gemini 2.5 Flash Lite Voice',
+    badge: 'Fast',
+    desc: 'Lightweight & instant audio synthesis',
+  },
 ];
 
 export const TEXT_MODELS = [
-  { id: 'gemini-3.5-flash-lite', label: 'gemini-3.5-flash-lite (Fast & Reliable)' },
-  { id: 'gemini-flash-lite-latest', label: 'gemini-flash-lite-latest' },
-  { id: 'gemini-3.8-flash', label: 'gemini-3.8-flash' },
+  {
+    id: 'gemini-3.5-flash-lite',
+    name: 'Gemini 2.5 Flash Lite',
+    label: 'Gemini 2.5 Flash Lite (Fast & Reliable)',
+    badge: 'Recommended',
+    desc: 'Optimized for high-retention viral scripts',
+  },
+  {
+    id: 'gemini-flash-lite-latest',
+    name: 'Gemini Flash Lite Latest',
+    label: 'Gemini Flash Lite (Stable)',
+    badge: 'Stable',
+    desc: 'Ultra low latency & high consistency',
+  },
+  {
+    id: 'gemini-3.8-flash',
+    name: 'Gemini 2.5 Flash',
+    label: 'Gemini 2.5 Flash (Deep Research)',
+    badge: 'Deep Research',
+    desc: 'Comprehensive multi-source grounding',
+  },
 ];
 
 export const STYLE_PRESETS = [
