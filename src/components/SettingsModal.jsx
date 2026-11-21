@@ -212,31 +212,31 @@ export default function SettingsModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150">
-      <div className="w-full max-w-lg sm:max-w-xl bg-white border border-slate-200/90 rounded-[28px] shadow-level-3 overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="w-full max-w-lg sm:max-w-xl bg-white border border-slate-200/90 rounded-3xl shadow-level-3 overflow-hidden flex flex-col max-h-[92vh]">
         
         {/* Modal Header */}
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 rounded-full bg-[#0F172A] text-white flex items-center justify-center shadow-sm">
               <Key className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900 tracking-tight leading-tight">
-                API & Model Settings
+              <h3 className="font-h3 text-slate-900 leading-tight">
+                API &amp; Model Settings
               </h3>
-              <p className="text-[11px] font-medium text-slate-400 leading-tight">
-                Manage Gemini API access & AI models
+              <p className="font-caption text-slate-400 leading-tight">
+                Manage Gemini API access &amp; AI models
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Master Key Security Badge / Toggle */}
+            {/* Master Key Security Badge / Toggle (Outlined Pill) */}
             {isMasterActive ? (
               <button
                 type="button"
                 onClick={handleLockMasterKey}
-                className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 hover:bg-rose-50 text-emerald-800 hover:text-rose-700 border border-emerald-200 hover:border-rose-200 text-xs font-bold transition active:scale-95"
+                className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-slate-100 hover:bg-rose-50 text-slate-800 hover:text-rose-700 border border-slate-200 hover:border-rose-200 font-subtitle text-xs transition active:scale-95"
                 title="Master Key is Active. Click to lock."
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
@@ -246,10 +246,10 @@ export default function SettingsModal({
               <button
                 type="button"
                 onClick={() => setIsPinPromptOpen(!isPinPromptOpen)}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition active:scale-95 ${
+                className={`flex items-center gap-1.5 h-8 px-3 rounded-full font-subtitle text-xs border transition active:scale-95 ${
                   isPinPromptOpen
-                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                    : 'bg-slate-100 hover:bg-slate-200/80 text-slate-700 border-slate-200/90'
+                    ? 'bg-[#0F172A] text-white border-[#0F172A]'
+                    : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300'
                 }`}
                 title="Enter 6-digit Owner PIN to unlock Master Key"
               >
@@ -261,7 +261,7 @@ export default function SettingsModal({
             <button
               type="button"
               onClick={handleCloseAndSave}
-              className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center transition active:scale-90"
+              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition active:scale-90"
               title="Close"
             >
               <X className="w-4 h-4" />
@@ -270,18 +270,18 @@ export default function SettingsModal({
         </div>
 
         {/* Modal Body */}
-        <div className="p-4 sm:p-5 space-y-3.5 overflow-y-auto no-scrollbar flex-1 bg-[#F9FAFB]/60 pb-28">
+        <div className="p-4 sm:p-5 space-y-3.5 overflow-y-auto no-scrollbar flex-1 bg-[#FAFAFA] pb-28">
 
           {/* 1. ELEGANT OWNER PIN DRAWER */}
           {isPinPromptOpen && !isMasterActive && (
-            <div className="bg-gradient-to-br from-emerald-50/90 via-teal-50/40 to-white border border-emerald-200 rounded-[22px] p-3.5 sm:p-4 shadow-level-1 animate-in fade-in zoom-in-95 duration-150 space-y-2.5">
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-sm animate-in fade-in zoom-in-95 duration-150 space-y-2.5">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-950 flex items-center gap-1.5">
-                    <Lock className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="font-subtitle text-slate-900 flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-slate-700" />
                     <span>Owner Master Access</span>
                   </span>
-                  <p className="text-[11px] text-emerald-700 font-medium mt-0.5">
+                  <p className="font-caption text-slate-500 mt-0.5">
                     Enter your 6-digit secret PIN to unlock the master engine
                   </p>
                 </div>
@@ -291,7 +291,7 @@ export default function SettingsModal({
                     setIsPinPromptOpen(false);
                     setPinError('');
                   }}
-                  className="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-emerald-100/50 transition"
+                  className="text-slate-400 hover:text-slate-600 p-1 rounded-full"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -307,20 +307,20 @@ export default function SettingsModal({
                   value={pinInput}
                   onChange={handlePinChange}
                   placeholder="••••••"
-                  className="flex-1 h-11 bg-white border border-emerald-200 rounded-xl px-4 text-center text-lg font-mono font-bold tracking-[0.4em] text-slate-900 focus-ring-mint transition shadow-sm"
+                  className="flex-1 h-10 bg-white border border-slate-300 focus:border-slate-800 rounded-xl px-4 text-center text-lg font-mono font-bold tracking-[0.4em] text-slate-900 outline-none shadow-sm"
                 />
 
                 <button
                   type="submit"
                   disabled={pinInput.length !== 6}
-                  className="h-11 px-5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-40 text-white text-xs font-bold shadow-tactile-primary transition active:scale-95 shrink-0"
+                  className="h-10 px-5 rounded-full bg-[#0F172A] hover:bg-[#1E293B] disabled:opacity-40 text-white font-subtitle text-xs shadow-sm transition active:scale-95 shrink-0"
                 >
                   Unlock
                 </button>
               </form>
 
               {pinError && (
-                <p className="text-xs text-rose-600 font-semibold flex items-center gap-1.5 animate-in fade-in">
+                <p className="font-caption font-semibold text-rose-600 flex items-center gap-1.5 animate-in fade-in">
                   <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                   <span>{pinError}</span>
                 </p>
@@ -329,10 +329,10 @@ export default function SettingsModal({
           )}
 
           {/* 2. GEMINI API KEY CARD */}
-          <div className="bg-white border border-slate-200/90 rounded-[22px] p-3.5 sm:p-4 shadow-level-1 space-y-3">
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-1.5">
-                <Key className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="font-subtitle text-slate-900 flex items-center gap-1.5">
+                <Key className="w-3.5 h-3.5 text-slate-600" />
                 <span>Gemini API Key</span>
               </span>
 
@@ -342,7 +342,7 @@ export default function SettingsModal({
                     type="button"
                     onClick={handleVerifyApi}
                     disabled={verifyState.status === 'checking'}
-                    className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition active:scale-95"
+                    className="h-8 px-3 rounded-full bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-subtitle text-xs flex items-center gap-1.5 transition active:scale-95 shadow-sm"
                   >
                     <RefreshCw
                       className={`w-3 h-3 ${verifyState.status === 'checking' ? 'animate-spin' : ''}`}
@@ -368,12 +368,12 @@ export default function SettingsModal({
                   onSaveSettings(updated);
                 }}
                 placeholder="AIza... or paste your Gemini API key"
-                className="w-full h-11 bg-slate-50/90 border border-slate-200/90 rounded-xl pl-3.5 pr-10 text-xs font-mono font-medium text-slate-900 focus-ring-mint transition shadow-sm"
+                className="w-full h-10 bg-white border border-slate-200 hover:border-slate-300 focus:border-slate-800 rounded-xl pl-3.5 pr-10 font-mono text-xs text-slate-900 transition shadow-sm outline-none"
               />
               <button
                 type="button"
                 onClick={() => setShowKey(!showKey)}
-                className="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600 transition"
+                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 transition"
               >
                 {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -382,9 +382,9 @@ export default function SettingsModal({
             {/* Verification Alert */}
             {verifyState.message && (
               <div
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs border animate-in fade-in duration-150 ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl font-caption border animate-in fade-in duration-150 ${
                   verifyState.status === 'verified'
-                    ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                    ? 'bg-slate-50 border-slate-300 text-slate-800'
                     : verifyState.status === 'error'
                     ? 'bg-rose-50 border-rose-200 text-rose-800'
                     : 'bg-slate-100 border-slate-200 text-slate-700'
@@ -399,24 +399,24 @@ export default function SettingsModal({
                 {verifyState.status === 'checking' && (
                   <Loader2 className="w-4 h-4 animate-spin shrink-0 text-slate-500" />
                 )}
-                <span className="truncate font-semibold">{verifyState.message}</span>
+                <span className="truncate font-medium">{verifyState.message}</span>
               </div>
             )}
 
             {/* Status Row inside card */}
-            <div className="flex items-center justify-between text-xs pt-0.5">
+            <div className="flex items-center justify-between font-caption pt-0.5">
               {isMasterActive ? (
-                <span className="text-[11px] font-semibold text-emerald-700 flex items-center gap-1">
+                <span className="font-medium text-emerald-700 flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Master Key Active & Ready</span>
+                  <span>Master Key Active &amp; Ready</span>
                 </span>
               ) : draftSettings.apiKey ? (
-                <span className="text-[11px] font-medium text-slate-500 flex items-center gap-1">
-                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="text-slate-500 flex items-center gap-1">
+                  <Check className="w-3.5 h-3.5 text-slate-700" />
                   <span>Saved in local storage</span>
                 </span>
               ) : (
-                <span className="text-[11px] text-slate-400">
+                <span className="text-slate-400">
                   Enter key above or click Owner PIN
                 </span>
               )}
@@ -425,7 +425,7 @@ export default function SettingsModal({
                 <button
                   type="button"
                   onClick={handleLockMasterKey}
-                  className="text-xs font-semibold text-rose-600 hover:text-rose-700 transition"
+                  className="font-semibold text-rose-600 hover:text-rose-700 transition"
                 >
                   Clear Key
                 </button>
@@ -433,27 +433,27 @@ export default function SettingsModal({
             </div>
           </div>
 
-          {/* 3. AI ENGINE MODELS (SIDE-BY-SIDE TACTILE CARDS) */}
-          <div className="bg-white border border-slate-200/90 rounded-[22px] p-3.5 sm:p-4 shadow-level-1 space-y-3">
+          {/* 3. AI ENGINE MODELS (SIDE-BY-SIDE 2-COLUMN GRID) */}
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-1.5">
-                <Cpu className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="font-subtitle text-slate-900 flex items-center gap-1.5">
+                <Cpu className="w-3.5 h-3.5 text-slate-600" />
                 <span>AI Engine Models</span>
               </span>
-              <span className="text-[10px] font-semibold text-slate-400">
+              <span className="font-caption text-slate-400">
                 Instant sync
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {/* TTS Model Dropdown */}
               <div className="relative" ref={ttsDropdownRef}>
-                <label className="text-[11px] font-bold text-slate-600 mb-1.5 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <Volume2 className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>TTS Voice Model</span>
+                <label className="font-subtitle text-slate-700 mb-1.5 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 truncate">
+                    <Volume2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                    <span>TTS Voice</span>
                   </span>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-100/70 text-emerald-800">
+                  <span className="font-caption font-semibold px-2 py-0.2 rounded-full bg-slate-100 text-slate-600 shrink-0">
                     {activeTtsObj.badge || 'Voice'}
                   </span>
                 </label>
@@ -464,31 +464,31 @@ export default function SettingsModal({
                     setIsTtsOpen(!isTtsOpen);
                     setIsTextOpen(false);
                   }}
-                  className={`w-full h-11 px-3 rounded-xl bg-slate-50/80 hover:bg-slate-100/80 border flex items-center justify-between text-left transition shadow-sm active:scale-[0.99] focus:outline-none ${
+                  className={`w-full h-11 px-3 rounded-xl bg-white hover:bg-slate-50 border flex items-center justify-between text-left transition shadow-sm active:scale-[0.99] outline-none ${
                     isTtsOpen
-                      ? 'border-emerald-500 ring-2 ring-emerald-500/20'
-                      : 'border-slate-200/90'
+                      ? 'border-slate-800 ring-1 ring-slate-800'
+                      : 'border-slate-200'
                   }`}
                 >
                   <div className="min-w-0 pr-2">
-                    <p className="text-xs font-bold text-slate-900 truncate">
+                    <p className="font-subtitle text-xs text-slate-900 truncate">
                       {activeTtsObj.name || activeTtsObj.label}
                     </p>
-                    <p className="text-[10px] font-medium text-slate-400 truncate">
+                    <p className="font-caption text-slate-400 truncate">
                       {activeTtsObj.id}
                     </p>
                   </div>
                   <ChevronDown
                     className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
-                      isTtsOpen ? 'rotate-180 text-emerald-600' : ''
+                      isTtsOpen ? 'rotate-180 text-slate-900' : ''
                     }`}
                   />
                 </button>
 
                 {/* TTS Popover */}
                 {isTtsOpen && (
-                  <div className="absolute top-full left-0 right-0 sm:left-0 sm:right-auto sm:w-72 mt-1.5 z-50 bg-white border border-slate-200/95 rounded-2xl shadow-level-3 p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100">
-                    <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <div className="absolute top-full left-0 right-0 sm:left-0 sm:right-auto sm:w-72 mt-1.5 z-50 bg-white border border-slate-200 rounded-2xl shadow-level-3 p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100">
+                    <div className="px-2.5 py-1 font-caption font-semibold uppercase tracking-wider text-slate-400">
                       Select TTS Voice Model
                     </div>
                     {TTS_MODELS.map((m) => {
@@ -500,27 +500,27 @@ export default function SettingsModal({
                           onClick={() => handleSelectTtsModel(m.id)}
                           className={`w-full p-2.5 rounded-xl text-left flex items-start justify-between transition ${
                             isSelected
-                              ? 'bg-emerald-50 text-emerald-950 font-bold border border-emerald-200/80 shadow-sm'
+                              ? 'bg-slate-100 text-slate-900 font-semibold'
                               : 'hover:bg-slate-50 text-slate-700'
                           }`}
                         >
                           <div className="min-w-0 pr-2">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold text-slate-900 truncate">
+                              <span className="font-subtitle text-xs text-slate-900 truncate">
                                 {m.name || m.label}
                               </span>
                               {m.badge && (
-                                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 shrink-0">
+                                <span className="font-caption text-[10px] px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-700 shrink-0">
                                   {m.badge}
                                 </span>
                               )}
                             </div>
-                            <p className="text-[10px] text-slate-500 font-normal line-clamp-1 mt-0.5">
+                            <p className="font-caption text-slate-500 line-clamp-1 mt-0.5">
                               {m.desc || m.id}
                             </p>
                           </div>
                           {isSelected && (
-                            <Check className="w-4 h-4 text-emerald-600 stroke-[2.5] shrink-0 mt-0.5" />
+                            <Check className="w-4 h-4 text-slate-900 stroke-[2.5] shrink-0 mt-0.5" />
                           )}
                         </button>
                       );
@@ -531,12 +531,12 @@ export default function SettingsModal({
 
               {/* Story Model Dropdown */}
               <div className="relative" ref={textDropdownRef}>
-                <label className="text-[11px] font-bold text-slate-600 mb-1.5 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <BookOpen className="w-3.5 h-3.5 text-teal-600" />
-                    <span>Script & Story Model</span>
+                <label className="font-subtitle text-slate-700 mb-1.5 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 truncate">
+                    <BookOpen className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                    <span>Story Model</span>
                   </span>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-teal-100/70 text-teal-800">
+                  <span className="font-caption font-semibold px-2 py-0.2 rounded-full bg-slate-100 text-slate-600 shrink-0">
                     {activeTextObj.badge || 'Script'}
                   </span>
                 </label>
@@ -547,32 +547,32 @@ export default function SettingsModal({
                     setIsTextOpen(!isTextOpen);
                     setIsTtsOpen(false);
                   }}
-                  className={`w-full h-11 px-3 rounded-xl bg-slate-50/80 hover:bg-slate-100/80 border flex items-center justify-between text-left transition shadow-sm active:scale-[0.99] focus:outline-none ${
+                  className={`w-full h-11 px-3 rounded-xl bg-white hover:bg-slate-50 border flex items-center justify-between text-left transition shadow-sm active:scale-[0.99] outline-none ${
                     isTextOpen
-                      ? 'border-emerald-500 ring-2 ring-emerald-500/20'
-                      : 'border-slate-200/90'
+                      ? 'border-slate-800 ring-1 ring-slate-800'
+                      : 'border-slate-200'
                   }`}
                 >
                   <div className="min-w-0 pr-2">
-                    <p className="text-xs font-bold text-slate-900 truncate">
+                    <p className="font-subtitle text-xs text-slate-900 truncate">
                       {activeTextObj.name || activeTextObj.label}
                     </p>
-                    <p className="text-[10px] font-medium text-slate-400 truncate">
+                    <p className="font-caption text-slate-400 truncate">
                       {activeTextObj.id}
                     </p>
                   </div>
                   <ChevronDown
                     className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
-                      isTextOpen ? 'rotate-180 text-emerald-600' : ''
+                      isTextOpen ? 'rotate-180 text-slate-900' : ''
                     }`}
                   />
                 </button>
 
                 {/* Story Popover */}
                 {isTextOpen && (
-                  <div className="absolute top-full right-0 left-0 sm:left-auto sm:right-0 sm:w-76 mt-1.5 z-50 bg-white border border-slate-200/95 rounded-2xl shadow-level-3 p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100">
-                    <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Select Script & Story Model
+                  <div className="absolute top-full right-0 left-0 sm:left-auto sm:right-0 sm:w-72 mt-1.5 z-50 bg-white border border-slate-200 rounded-2xl shadow-level-3 p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100">
+                    <div className="px-2.5 py-1 font-caption font-semibold uppercase tracking-wider text-slate-400">
+                      Select Script &amp; Story Model
                     </div>
                     {TEXT_MODELS.map((m) => {
                       const isSelected = draftSettings.textModel === m.id;
@@ -583,27 +583,27 @@ export default function SettingsModal({
                           onClick={() => handleSelectTextModel(m.id)}
                           className={`w-full p-2.5 rounded-xl text-left flex items-start justify-between transition ${
                             isSelected
-                              ? 'bg-teal-50 text-teal-950 font-bold border border-teal-200/80 shadow-sm'
+                              ? 'bg-slate-100 text-slate-900 font-semibold'
                               : 'hover:bg-slate-50 text-slate-700'
                           }`}
                         >
                           <div className="min-w-0 pr-2">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold text-slate-900 truncate">
+                              <span className="font-subtitle text-xs text-slate-900 truncate">
                                 {m.name || m.label}
                               </span>
                               {m.badge && (
-                                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-teal-100 text-teal-800 shrink-0">
+                                <span className="font-caption text-[10px] px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-700 shrink-0">
                                   {m.badge}
                                 </span>
                               )}
                             </div>
-                            <p className="text-[10px] text-slate-500 font-normal line-clamp-1 mt-0.5">
+                            <p className="font-caption text-slate-500 line-clamp-1 mt-0.5">
                               {m.desc || m.id}
                             </p>
                           </div>
                           {isSelected && (
-                            <Check className="w-4 h-4 text-teal-600 stroke-[2.5] shrink-0 mt-0.5" />
+                            <Check className="w-4 h-4 text-slate-900 stroke-[2.5] shrink-0 mt-0.5" />
                           )}
                         </button>
                       );
@@ -621,7 +621,7 @@ export default function SettingsModal({
             href="https://aistudio.google.com/app/apikey"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs font-semibold text-slate-500 hover:text-emerald-700 flex items-center gap-1 transition"
+            className="font-subtitle text-xs text-slate-500 hover:text-slate-900 flex items-center gap-1 transition"
           >
             <span>Get Free Gemini Key</span>
             <ExternalLink className="w-3 h-3" />
@@ -630,9 +630,9 @@ export default function SettingsModal({
           <button
             type="button"
             onClick={handleCloseAndSave}
-            className="h-9.5 px-6 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-tactile-dark active:scale-95 flex items-center gap-1.5"
+            className="h-9.5 px-6 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white font-subtitle text-xs transition shadow-sm active:scale-95 flex items-center gap-1.5"
           >
-            <Check className="w-3.5 h-3.5 text-emerald-400" />
+            <Check className="w-3.5 h-3.5 text-white" />
             <span>Done</span>
           </button>
         </div>

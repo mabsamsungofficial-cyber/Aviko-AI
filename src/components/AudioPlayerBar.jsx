@@ -20,16 +20,16 @@ export default function AudioPlayerBar({
   activeModelName,
 }) {
   return (
-    <footer className="fixed bottom-0 inset-x-0 z-20 border-t border-slate-200/80 bg-white/95 backdrop-blur-md px-3 sm:px-6 py-3.5 sm:py-4 shadow-level-3">
+    <footer className="fixed bottom-0 inset-x-0 z-20 border-t border-slate-200/90 bg-white/95 backdrop-blur-md px-4 sm:px-6 py-3.5 shadow-level-3">
       <div className="max-w-3xl mx-auto">
         {audioUrl ? (
           <div className="space-y-3">
             {/* Player Controls Bar */}
-            <div className="flex items-center gap-3 bg-slate-50 border border-slate-200/80 rounded-[22px] p-2.5 sm:px-4 sm:py-3 shadow-level-1">
+            <div className="flex items-center gap-3 bg-slate-50 border border-slate-200/90 rounded-2xl p-2.5 sm:px-4 sm:py-3 shadow-sm">
               <button
                 type="button"
                 onClick={onTogglePlay}
-                className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 hover:from-emerald-600 hover:to-teal-800 active:scale-95 text-white flex items-center justify-center shrink-0 transition shadow-tactile-primary cursor-pointer"
+                className="w-11 h-11 rounded-full bg-[#0F172A] hover:bg-[#1E293B] active:bg-black active:scale-95 text-white flex items-center justify-center shrink-0 transition shadow-sm cursor-pointer"
               >
                 {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
               </button>
@@ -43,22 +43,22 @@ export default function AudioPlayerBar({
                   step={0.05}
                   value={currentTime}
                   onChange={onSeek}
-                  className="w-full accent-emerald-600 h-2 bg-slate-200 rounded-lg cursor-pointer"
+                  className="w-full accent-[#0F172A] h-2 bg-slate-200 rounded-lg cursor-pointer"
                 />
-                <div className="flex justify-between items-center text-[11px] font-semibold text-slate-500 tabular-nums mt-1">
+                <div className="flex justify-between items-center font-caption text-slate-500 tabular-nums mt-1">
                   <span>{formatTime(currentTime)}</span>
                   <span>{formatTime(duration)}</span>
                 </div>
               </div>
 
-              {/* Download Button */}
+              {/* Download Outlined Button */}
               <button
                 type="button"
                 onClick={onDownload}
-                className="h-11 px-4 sm:px-5 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 transition shrink-0 active:scale-95 shadow-tactile-dark cursor-pointer"
+                className="h-10 px-4 rounded-full bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-subtitle flex items-center gap-1.5 transition shrink-0 active:scale-95 shadow-sm cursor-pointer"
                 title="Download WAV"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4 text-slate-600" />
                 <span className="hidden sm:inline">Save WAV</span>
               </button>
 
@@ -75,42 +75,42 @@ export default function AudioPlayerBar({
               />
             </div>
 
-            {/* Quick Regenerate Button */}
+            {/* Quick Regenerate Outlined Pill Button */}
             <button
               type="button"
               onClick={onGenerate}
               disabled={isGenerating}
-              className="w-full h-11 rounded-full bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200/80 text-emerald-800 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition active:scale-[0.99] shadow-level-1 cursor-pointer"
+              className="w-full h-11 rounded-full bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-subtitle flex items-center justify-center gap-2 transition active:scale-[0.99] shadow-sm cursor-pointer"
             >
               {isGenerating ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin text-slate-600" />
                   <span>Generating New Audio...</span>
                 </>
               ) : (
                 <>
-                  <RefreshCw className="w-4 h-4" />
+                  <RefreshCw className="w-4 h-4 text-slate-600" />
                   <span>Regenerate Audio</span>
                 </>
               )}
             </button>
           </div>
         ) : (
-          /* Primary Full-width CTA with Styleguide Physics - Substantial, Thick & Tactile */
+          /* Primary Full-width CTA - 02 Style Guide Filled Pill (56px Height / #0F172A) */
           <button
             type="button"
             onClick={onGenerate}
             disabled={isGenerating}
-            className="w-full h-14 sm:h-[54px] rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 disabled:opacity-60 text-white text-sm sm:text-base font-bold flex items-center justify-center gap-2.5 transition active:scale-[0.98] active:translate-y-0.5 shadow-tactile-primary border-t border-white/30 tracking-wide cursor-pointer"
+            className="w-full h-14 rounded-full bg-[#0F172A] hover:bg-[#1E293B] active:bg-black active:scale-[0.98] disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-subtitle text-sm sm:text-base flex items-center justify-center gap-2.5 transition shadow-tactile-dark cursor-pointer"
           >
             {isGenerating ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin text-slate-300" />
                 <span>Generating Studio Voiceover...</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-5 h-5 text-emerald-100" />
+                <Sparkles className="w-5 h-5 text-slate-200" />
                 <span>Generate Voiceover</span>
               </>
             )}

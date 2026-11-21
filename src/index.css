@@ -1,8 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer utilities {
+  /* 02 Style Guide Typography Scale */
+  .font-h1 {
+    font-family: 'Inter', sans-serif;
+    font-size: 22px;
+    line-height: 32px;
+    font-weight: 700;
+  }
+  .font-h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 20px;
+    line-height: 32px;
+    font-weight: 600;
+  }
+  .font-h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 24px;
+    font-weight: 600;
+  }
+  .font-body-medium {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 24px;
+    font-weight: 400;
+  }
+  .font-body {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    line-height: 24px;
+    font-weight: 400;
+  }
+  .font-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    line-height: 24px;
+    font-weight: 600;
+  }
+  .font-caption {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    line-height: 16px;
+    font-weight: 400;
+  }
+
   /* Styleguide Elevation Levels */
   .shadow-level-1 {
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.02);
@@ -14,30 +60,13 @@
     box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
   }
 
-  /* Tactile Physics Buttons (Level 4/5) */
-  .shadow-tactile-primary {
-    box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.35), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  }
-  .shadow-tactile-primary:active {
-    box-shadow: 0 1px 4px 0 rgba(16, 185, 129, 0.25);
-    transform: translateY(1px);
-  }
-
+  /* Tactile Physics Buttons */
   .shadow-tactile-dark {
     box-shadow: 0 4px 12px 0 rgba(15, 23, 42, 0.25), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   }
   .shadow-tactile-dark:active {
     box-shadow: 0 1px 4px 0 rgba(15, 23, 42, 0.15);
     transform: translateY(1px);
-  }
-
-  /* Styleguide Focus Ring */
-  .focus-ring-mint {
-    outline: none !important;
-  }
-  .focus-ring-mint:focus {
-    border-color: #00cfcc !important;
-    box-shadow: 0 0 0 3px rgba(0, 207, 204, 0.25) !important;
   }
 }
 
@@ -46,6 +75,7 @@ html, body, #root {
   height: 100%;
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
+  font-family: 'Inter', sans-serif;
 }
 
 body {
@@ -54,7 +84,8 @@ body {
   touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;
-  background-color: #f7f9fa;
+  background-color: #FAFAFA;
+  color: #0F172A;
 }
 
 /* Allow text selection inside inputs and textareas */
@@ -62,13 +93,6 @@ input, textarea, [contenteditable="true"] {
   -webkit-user-select: text;
   user-select: text;
   touch-action: auto;
-}
-
-/* Ensure mobile browser does not auto-zoom on input focus */
-@media screen and (max-width: 768px) {
-  input, select, textarea {
-    font-size: 16px !important;
-  }
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -82,7 +106,7 @@ input, textarea, [contenteditable="true"] {
   scrollbar-width: none;
 }
 
-/* Sleek minimalist scrollbar for list containers */
+/* Sleek minimalist scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;

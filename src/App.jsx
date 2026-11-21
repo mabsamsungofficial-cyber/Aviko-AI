@@ -658,25 +658,25 @@ export default function App() {
   const activeCharacterTag = favorites[settings.voice]?.tag || '';
 
   return (
-    <div className="min-h-screen bg-[#F7F9FA] text-slate-900 font-sans flex flex-col overscroll-none">
+    <div className="min-h-screen bg-[#FAFAFA] text-slate-900 font-sans flex flex-col overscroll-none">
       {/* Top Navbar */}
-      <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-3.5 sm:px-6 h-14 flex items-center justify-between gap-3 shadow-level-1">
+      <header className="sticky top-0 z-20 border-b border-slate-200/90 bg-white/95 backdrop-blur-md px-3.5 sm:px-6 h-14 flex items-center justify-between gap-3 shadow-sm">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white flex items-center justify-center shadow-sm shadow-emerald-500/25 shrink-0">
+          <div className="w-8 h-8 rounded-full bg-[#0F172A] text-white flex items-center justify-center shrink-0 shadow-sm">
             <Volume2 className="w-4 h-4" />
           </div>
-          <span className="font-bold text-sm tracking-tight text-slate-900 truncate">
-            Aviko AI <span className="text-[10px] font-normal text-slate-400">v2</span>
+          <span className="font-h3 text-slate-900 truncate">
+            Aviko AI <span className="font-caption text-slate-400">v2</span>
           </span>
 
-          {/* Primary Nav Switcher (Desktop / Tablet) - Styled like Styleguide Segmented Pill Tabs */}
-          <nav className="hidden sm:inline-flex items-center bg-slate-200/60 border border-slate-200/70 rounded-full p-1 ml-3">
+          {/* Primary Nav Switcher (Desktop / Tablet) - Styled like Style Guide Segmented Pill Tabs */}
+          <nav className="hidden sm:inline-flex items-center bg-slate-100 border border-slate-200/90 rounded-full p-1 ml-3">
             <button
               type="button"
               onClick={() => setActiveSection('story')}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition ${
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full font-subtitle text-xs transition ${
                 activeSection === 'story'
-                  ? 'bg-white text-slate-900 shadow-level-1'
+                  ? 'bg-white text-slate-900 shadow-sm'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -686,9 +686,9 @@ export default function App() {
             <button
               type="button"
               onClick={() => setActiveSection('voiceover')}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition ${
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full font-subtitle text-xs transition ${
                 activeSection === 'voiceover'
-                  ? 'bg-white text-slate-900 shadow-level-1'
+                  ? 'bg-white text-slate-900 shadow-sm'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -704,7 +704,7 @@ export default function App() {
             <button
               type="button"
               onClick={handleInstallPWA}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-bold shadow-tactile-primary transition"
+              className="flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-white font-subtitle text-xs shadow-sm transition active:scale-95"
               title="Install App"
             >
               <Download className="w-3 h-3" />
@@ -712,7 +712,7 @@ export default function App() {
             </button>
           )}
 
-          {/* Settings / API Button with Dynamic Security Status */}
+          {/* Settings / API Button with Dynamic Security Status (Outlined Pill Button) */}
           {(() => {
             const isMaster = settings.apiKey === MASTER_CONFIG.apiKey;
             const hasCustom = !!settings.apiKey && !isMaster;
@@ -720,13 +720,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setIsSettingsOpen(true)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold shadow-level-1 transition active:scale-95 ${
-                  isMaster
-                    ? 'border-emerald-200/90 bg-emerald-50/80 text-emerald-900'
-                    : hasCustom
-                    ? 'border-blue-200/90 bg-blue-50/80 text-blue-900'
-                    : 'border-amber-200/90 bg-amber-50/80 text-amber-900'
-                }`}
+                className="h-9 px-3.5 rounded-full border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-subtitle text-xs flex items-center gap-1.5 transition active:scale-95 shadow-sm"
                 title={
                   isMaster
                     ? 'Master Key Active (Unlocked)'
@@ -738,17 +732,17 @@ export default function App() {
                 <span
                   className={`w-2 h-2 rounded-full ${
                     isMaster
-                      ? 'bg-emerald-500 shadow-xs shadow-emerald-500/50'
+                      ? 'bg-emerald-500'
                       : hasCustom
-                      ? 'bg-blue-500 shadow-xs shadow-blue-500/50'
+                      ? 'bg-blue-500'
                       : 'bg-amber-500 animate-pulse'
                   }`}
                 />
                 <span>API</span>
                 {isMaster || hasCustom ? (
-                  <ShieldCheck className="w-3.5 h-3.5 opacity-70" />
+                  <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
                 ) : (
-                  <Lock className="w-3.5 h-3.5 opacity-70" />
+                  <Lock className="w-3.5 h-3.5 text-slate-400" />
                 )}
               </button>
             );
@@ -757,14 +751,14 @@ export default function App() {
       </header>
 
       {/* Mobile Nav Switcher (Top segmented control for phones) */}
-      <div className="sm:hidden px-3 pt-2.5 pb-2 bg-white/90 border-b border-slate-200/60 flex justify-center">
-        <div className="grid grid-cols-2 bg-slate-200/60 p-1 rounded-full border border-slate-200/70 w-full max-w-sm">
+      <div className="sm:hidden px-3 pt-2.5 pb-2 bg-white/90 border-b border-slate-200/70 flex justify-center">
+        <div className="grid grid-cols-2 bg-slate-100 p-1 rounded-full border border-slate-200/90 w-full max-w-sm">
           <button
             type="button"
             onClick={() => setActiveSection('story')}
-            className={`flex items-center justify-center gap-1.5 py-1.5 rounded-full text-xs font-bold transition ${
+            className={`flex items-center justify-center gap-1.5 py-1.5 rounded-full font-subtitle text-xs transition ${
               activeSection === 'story'
-                ? 'bg-white text-slate-900 shadow-level-1'
+                ? 'bg-white text-slate-900 shadow-sm'
                 : 'text-slate-600'
             }`}
           >
@@ -774,9 +768,9 @@ export default function App() {
           <button
             type="button"
             onClick={() => setActiveSection('voiceover')}
-            className={`flex items-center justify-center gap-1.5 py-1.5 rounded-full text-xs font-bold transition ${
+            className={`flex items-center justify-center gap-1.5 py-1.5 rounded-full font-subtitle text-xs transition ${
               activeSection === 'voiceover'
-                ? 'bg-white text-slate-900 shadow-level-1'
+                ? 'bg-white text-slate-900 shadow-sm'
                 : 'text-slate-600'
             }`}
           >
@@ -900,7 +894,7 @@ export default function App() {
 
       {/* Toast Notification */}
       {toastMsg && (
-        <div className="fixed top-16 sm:top-18 right-3 sm:right-6 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-full text-xs font-semibold shadow-level-3 flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-150 border border-slate-700">
+        <div className="fixed top-16 sm:top-18 right-3 sm:right-6 z-50 bg-[#0F172A] text-white px-4 py-2 rounded-full font-subtitle text-xs shadow-level-3 flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-150 border border-slate-800">
           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
           {toastMsg}
         </div>
